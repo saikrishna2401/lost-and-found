@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Edit Pending Report - {{ item.title }}{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center py-2">
+    <div class="col-md-8">
+        <div class="card search-card p-4 shadow">
+            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                <div>
+                    <h3 class="fw-bold mb-1">Edit Pending Report</h3>
+                    <p class="text-muted small mb-0">Editing Item #{{ item.id }}: <strong>{{ item.title }}</strong></p>
+                </div>
+                <span class="badge badge-status bg-warning text-dark">Status: Pending</span>
+            </div>
+
+            <form method="POST" action="{{ url_for('user.edit_item', item_id=item.id) }}" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        {{ form.title.label(class="form-label fw-semibold") }}
+                        {{ form.title(class="form-control") }}
+                        {% for error in form.title.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        {{ form.item_type.label(class="form-label fw-semibold") }}
+                        {{ form.item_type(class="form-select") }}
+                        {% for error in form.item_type.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.category_id.label(class="form-label fw-semibold") }}
+                        {{ form.category_id(class="form-select") }}
+                        {% for error in form.category_id.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        {{ form.date_event.label(class="form-label fw-semibold") }}
+                        {{ form.date_event(class="form-control", type="date") }}
+                        {% for error in form.date_event.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form.location.label(class="form-label fw-semibold") }}
+                    {{ form.location(class="form-control") }}
+                    {% for error in form.location.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label fw-semibold") }}
+                    {{ form.description(class="form-control", rows="4") }}
+                    {% for error in form.description.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
+                    {{ form.image.label(class="form-label fw-semibold") }}
+                    {{ form.image(class="form-control") }}
+                    <small class="text-muted d-block mt-1">Upload a new photo to replace existing image.</small>
+                    
+                    <div id="image-preview" class="img-preview-box mt-3">
+                        <img src="{{ get_item_image_url(item.image_filename) }}" class="img-fluid rounded" alt="Current Photo">
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    {{ form.submit(class="btn btn-warning btn-lg rounded-pill fw-bold text-dark flex-grow-1") }}
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-secondary btn-lg rounded-pill">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Review Claim Request #{{ claim.id }}{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center py-2">
+    <div class="col-md-8">
+        <div class="card search-card p-4 shadow">
+            
+            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                <div>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-shield-lock text-info me-2"></i> Review Ownership Claim</h3>
+                    <p class="text-muted small mb-0">Claim #{{ claim.id }} for Found Item #{{ item.id }}: <strong>{{ item.title }}</strong></p>
+                </div>
+                <span class="badge badge-status {{ claim.status_badge_class }} fs-6">
+                    Claim Status: {{ claim.status }}
+                </span>
+            </div>
+
+            <!-- Item & Claim Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light h-100">
+                        <h6 class="fw-bold text-primary mb-2">Item Details</h6>
+                        <p class="mb-1"><strong>Title:</strong> {{ item.title }}</p>
+                        <p class="mb-1"><strong>Found At:</strong> {{ item.location }}</p>
+                        <p class="mb-1"><strong>Reported By:</strong> {{ item.submitter.username }}</p>
+                        <p class="mb-0"><strong>Description:</strong> {{ item.description|truncate(100) }}</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light h-100">
+                        <h6 class="fw-bold text-success mb-2">Claimant Info</h6>
+                        <p class="mb-1"><strong>Claimant:</strong> {{ claim.claimant.username }} ({{ claim.claimant.email }})</p>
+                        <p class="mb-1"><strong>Contact Info:</strong> {{ claim.contact_info }}</p>
+                        <p class="mb-0"><strong>Submitted On:</strong> {{ claim.created_at.strftime('%b %d, %Y %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ownership Proof Box -->
+            <div class="p-3 border border-warning rounded bg-light mb-4">
+                <h6 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-text me-1"></i> Claim Reason & Proof of Ownership</h6>
+                <p class="mb-2"><strong>Reason:</strong> {{ claim.reason }}</p>
+                <hr>
+                <p class="mb-0"><strong>Proof Details:</strong> {{ claim.description_proof }}</p>
+            </div>
+
+            <!-- Moderation Form -->
+            <form method="POST" action="{{ url_for('head.review_claim', claim_id=claim.id) }}" class="p-3 border rounded bg-white shadow-sm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <h5 class="fw-bold mb-3">Claim Decision</h5>
+
+                <div class="mb-3">
+                    <label for="action" class="form-label fw-semibold">Action</label>
+                    <select class="form-select" id="action" name="action" required>
+                        <option value="approve">Approve Claim (Mark Item as CLAIMED & Notify User)</option>
+                        <option value="reject">Reject Claim (Provide Reason)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="rejection-reason-box" style="display: none;">
+                    <label for="rejection_reason" class="form-label fw-semibold text-danger">Rejection Reason</label>
+                    <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="2" placeholder="Explain why proof was deemed insufficient."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold px-4">Submit Decision</button>
+                    <a href="{{ url_for('head.dashboard') }}" class="btn btn-outline-secondary btn-lg rounded-pill">Back to Queue</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

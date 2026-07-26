@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}System Audit Trail - Administrator{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-journal-text text-danger me-2"></i> System Audit Trail</h2>
+        <p class="text-muted mb-0">Complete log of user actions, status transitions, role changes, and administrative events.</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary rounded-pill btn-sm">Admin Portal</a>
+</div>
+
+<!-- Search Filter -->
+<div class="card search-card p-3 mb-4">
+    <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="row g-2">
+        <div class="col-md-5">
+            <input type="text" name="action" class="form-control" placeholder="Filter by action (e.g. APPROVED, REGISTERED, ROLE)" value="{{ action_filter }}">
+        </div>
+        <div class="col-md-5">
+            <input type="text" name="username" class="form-control" placeholder="Filter by username" value="{{ username_filter }}">
+        </div>
+        <div class="col-md-2 d-flex gap-1">
+            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">Filter</button>
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary rounded-pill" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive table-custom">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Log ID</th>
+                <th>Timestamp (UTC)</th>
+                <th>User / Actor</th>
+                <th>Role</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>#{{ log.id }}</td>
+                <td><small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+                <td><strong class="text-dark">{{ log.username }}</strong></td>
+                <td><span class="badge bg-secondary text-uppercase">{{ log.role }}</span></td>
+                <td><span class="badge bg-dark font-monospace">{{ log.action }}</span></td>
+                <td>
+                    {% if log.target_type %}
+                    <span class="badge bg-light text-dark border">{{ log.target_type }} #{{ log.target_id or '' }}</span>
+                    {% else %}
+                    <span class="text-muted small">N/A</span>
+                    {% endif %}
+                </td>
+                <td><small class="text-secondary">{{ log.details or '-' }}</small></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center py-4 text-muted">No audit log records found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

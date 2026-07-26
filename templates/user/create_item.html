@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Report Lost or Found Item{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center py-2">
+    <div class="col-md-8">
+        <div class="card search-card p-4 shadow">
+            <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                <i class="bi bi-file-earmark-plus text-warning display-5"></i>
+                <div>
+                    <h3 class="fw-bold mb-1">Report Lost or Found Item</h3>
+                    <p class="text-muted small mb-0">Fill out item details accurately. Every new report is submitted with <strong>Pending</strong> status for moderation.</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('user.create_item') }}" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <div class="row">
+                    <!-- Title -->
+                    <div class="col-md-8 mb-3">
+                        {{ form.title.label(class="form-label fw-semibold") }}
+                        {{ form.title(class="form-control", placeholder="e.g. Black Leather Wallet, Silver Watch, House Keys") }}
+                        {% for error in form.title.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Type -->
+                    <div class="col-md-4 mb-3">
+                        {{ form.item_type.label(class="form-label fw-semibold") }}
+                        {{ form.item_type(class="form-select") }}
+                        {% for error in form.item_type.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Category -->
+                    <div class="col-md-6 mb-3">
+                        {{ form.category_id.label(class="form-label fw-semibold") }}
+                        {{ form.category_id(class="form-select") }}
+                        {% for error in form.category_id.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Date Event -->
+                    <div class="col-md-6 mb-3">
+                        {{ form.date_event.label(class="form-label fw-semibold") }}
+                        {{ form.date_event(class="form-control", type="date") }}
+                        {% for error in form.date_event.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="mb-3">
+                    {{ form.location.label(class="form-label fw-semibold") }}
+                    {{ form.location(class="form-control", placeholder="e.g. Central Park, Science Library Room 204, Bus Stop #4") }}
+                    {% for error in form.location.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label fw-semibold") }}
+                    {{ form.description(class="form-control", rows="4", placeholder="Provide detailed physical features, color, brand, condition, or circumstances.") }}
+                    {% for error in form.description.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Image Upload & Preview -->
+                <div class="mb-4">
+                    {{ form.image.label(class="form-label fw-semibold") }}
+                    {{ form.image(class="form-control") }}
+                    <small class="text-muted d-block mt-1">Supported formats: PNG, JPG, JPEG, GIF, WEBP (Max size: 5MB)</small>
+                    {% for error in form.image.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+
+                    <div id="image-preview" class="img-preview-box mt-3">
+                        <span class="text-muted small"><i class="bi bi-image me-1"></i> Image preview will appear here</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    {{ form.submit(class="btn btn-warning btn-lg rounded-pill fw-bold text-dark flex-grow-1") }}
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-secondary btn-lg rounded-pill">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

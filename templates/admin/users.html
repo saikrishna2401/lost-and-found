@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}User Management - Administrator{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-people-fill text-danger me-2"></i> User Management</h2>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary rounded-pill btn-sm">Back to Admin Portal</a>
+</div>
+
+<div class="row g-4">
+    <!-- Create User Form Column -->
+    <div class="col-md-4">
+        <div class="card search-card p-4 shadow">
+            <h4 class="fw-bold mb-3">Create User / Head</h4>
+
+            <form method="POST" action="{{ url_for('admin.manage_users') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    {{ form.username.label(class="form-label fw-semibold") }}
+                    {{ form.username(class="form-control", placeholder="Username") }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label fw-semibold") }}
+                    {{ form.email(class="form-control", placeholder="email@example.com") }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.role.label(class="form-label fw-semibold") }}
+                    {{ form.role(class="form-select") }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label fw-semibold") }}
+                    {{ form.password(class="form-control", placeholder="Leave blank for Password@123") }}
+                </div>
+
+                <div class="d-grid">
+                    {{ form.submit(class="btn btn-primary rounded-pill fw-bold") }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table Column -->
+    <div class="col-md-8">
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr class="{% if u.is_deleted %}table-secondary opacity-75{% endif %}">
+                        <td>#{{ u.id }}</td>
+                        <td>
+                            <strong class="d-block text-dark">{{ u.username }}</strong>
+                            <small class="text-muted">{{ u.email }}</small>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.change_user_role', user_id=u.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <select name="role" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()" {% if u.id == current_user.id or u.is_deleted %}disabled{% endif %}>
+                                    <option value="user" {% if u.role == 'user' %}selected{% endif %}>user</option>
+                                    <option value="head" {% if u.role == 'head' %}selected{% endif %}>head</option>
+                                    <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>admin</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            {% if u.is_deleted %}
+                                <span class="badge bg-secondary">Soft-Deleted</span>
+                            {% elif u.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Suspended</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if u.id != current_user.id %}
+                                {% if u.is_deleted %}
+                                    <form method="POST" action="{{ url_for('admin.restore_user', user_id=u.id) }}" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill">Restore</button>
+                                    </form>
+                                {% else %}
+                                    <!-- Reset Password Modal Trigger -->
+                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#resetPassModal{{ u.id }}">
+                                        Reset Pass
+                                    </button>
+
+                                    <!-- Suspend Toggle -->
+                                    <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" class="d-inline me-1">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} rounded-pill">
+                                            {% if u.is_active %}Suspend{% else %}Activate{% endif %}
+                                        </button>
+                                    </form>
+                                    <!-- Soft Delete -->
+                                    <form method="POST" action="{{ url_for('admin.soft_delete_user', user_id=u.id) }}" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Soft-delete this user?')">Delete</button>
+                                    </form>
+
+                                    <!-- Admin Password Reset Modal -->
+                                    <div class="modal fade text-start" id="resetPassModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">Admin Password Reset: {{ u.username }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form method="POST" action="{{ url_for('admin.admin_reset_user_password', user_id=u.id) }}">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">New Password for {{ u.username }}</label>
+                                                            <input type="password" name="new_password" class="form-control" placeholder="Enter new password (min 6 chars)" required minlength="6">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary rounded-pill fw-bold">Set Password</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted small">You (Self)</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

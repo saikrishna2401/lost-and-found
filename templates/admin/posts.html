@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}System Post Manager - Administrator{% endblock %}
+{% block content %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-file-post text-danger me-2"></i> System Post Manager</h2>
+        <p class="text-muted mb-0">View all system posts, filter by lifecycle status, soft-delete, and restore records.</p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        {% if show_deleted %}
+        <a href="{{ url_for('admin.manage_posts', show_deleted=0) }}" class="btn btn-outline-dark rounded-pill btn-sm">Hide Deleted Posts</a>
+        {% else %}
+        <a href="{{ url_for('admin.manage_posts', show_deleted=1) }}" class="btn btn-dark rounded-pill btn-sm">Show Soft-Deleted Posts</a>
+        {% endif %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary rounded-pill btn-sm">Admin Portal</a>
+    </div>
+</div>
+
+<!-- Status Filter Pills -->
+<div class="mb-3 d-flex flex-wrap gap-1">
+    <a href="{{ url_for('admin.manage_posts', show_deleted=show_deleted) }}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill">All Statuses</a>
+    {% for s in statuses %}
+    <a href="{{ url_for('admin.manage_posts', status=s, show_deleted=show_deleted) }}" class="btn btn-sm {% if status_filter == s %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill">{{ s }}</a>
+    {% endfor %}
+</div>
+
+<div class="table-responsive table-custom">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Submitter</th>
+                <th>Created</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr class="{% if item.is_deleted %}table-secondary opacity-75{% endif %}">
+                <td>#{{ item.id }}</td>
+                <td>
+                    <strong class="d-block text-dark">{{ item.title }}</strong>
+                    <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ item.location }}</small>
+                </td>
+                <td><span class="badge bg-dark text-uppercase">{{ item.item_type }}</span></td>
+                <td>{{ item.category.name if item.category else 'General' }}</td>
+                <td><span class="badge badge-status {{ item.status_badge_class }}">{{ item.status }}</span></td>
+                <td>{{ item.submitter.username }}</td>
+                <td>{{ item.created_at.strftime('%b %d, %Y') }}</td>
+                <td class="text-end">
+                    <a href="{{ url_for('main.item_detail', item_id=item.id) }}" class="btn btn-sm btn-outline-primary rounded-pill me-1">View</a>
+                    {% if item.is_deleted %}
+                        <form method="POST" action="{{ url_for('admin.restore_post', item_id=item.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill">Restore</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('admin.soft_delete_post', item_id=item.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Soft-delete this post?')">Soft-Delete</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center py-4 text-muted">No posts found matching the selected filter.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

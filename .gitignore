@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+
+# Database & Local instance
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded image files (keep placeholder)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Environment secrets
+.env
+
+# Node / JS
+node_modules/
+package-lock.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp

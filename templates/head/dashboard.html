@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Head Reviewer Queue - Lost & Found{% endblock %}
+{% block content %}
+
+<div class="search-card p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-clipboard-check text-info me-2"></i> Moderation Queue</h2>
+        <p class="text-muted mb-0">Review pending lost/found submissions and ownership claims.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <span class="badge bg-warning text-dark fs-6 px-3 py-2">Pending Items: {{ pending_items|length }}</span>
+        <span class="badge bg-info text-dark fs-6 px-3 py-2">Pending Claims: {{ pending_claims|length }}</span>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-pills mb-4 gap-2" id="headTabs" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active rounded-pill fw-semibold" id="pending-items-tab" data-bs-toggle="tab" data-bs-target="#pending-items" type="button">
+            <i class="bi bi-hourglass-split me-1"></i> Pending Submissions ({{ pending_items|length }})
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link rounded-pill fw-semibold" id="pending-claims-tab" data-bs-toggle="tab" data-bs-target="#pending-claims" type="button">
+            <i class="bi bi-hand-thumbs-up me-1"></i> Claim Requests ({{ pending_claims|length }})
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link rounded-pill fw-semibold" id="all-posts-tab" data-bs-toggle="tab" data-bs-target="#all-posts" type="button">
+            <i class="bi bi-grid-3x3-gap me-1"></i> All Posts Directory
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="headTabsContent">
+    
+    <!-- Tab 1: Pending Items -->
+    <div class="tab-pane fade show active" id="pending-items" role="tabpanel">
+        {% if pending_items %}
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Item</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Submitter</th>
+                        <th>Date Submitted</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in pending_items %}
+                    <tr>
+                        <td>#{{ item.id }}</td>
+                        <td>
+                            <strong class="d-block text-dark">{{ item.title }}</strong>
+                            <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ item.location }}</small>
+                        </td>
+                        <td><span class="badge bg-dark text-uppercase">{{ item.item_type }}</span></td>
+                        <td>{{ item.category.name if item.category else 'General' }}</td>
+                        <td>{{ item.submitter.username }}</td>
+                        <td>{{ item.created_at.strftime('%b %d, %H:%M') }}</td>
+                        <td><span class="badge badge-status {{ item.status_badge_class }}">{{ item.status }}</span></td>
+                        <td class="text-end">
+                            <a href="{{ url_for('head.review_item', item_id=item.id) }}" class="btn btn-sm btn-primary rounded-pill fw-bold">
+                                Review & Decide
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 search-card p-4">
+            <i class="bi bi-check-circle text-success display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold">Queue is Clean!</h5>
+            <p class="text-muted small">No pending item submissions awaiting review at this time.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 2: Pending Claims -->
+    <div class="tab-pane fade" id="pending-claims" role="tabpanel">
+        {% if pending_claims %}
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Target Item</th>
+                        <th>Claimant</th>
+                        <th>Reason & Proof</th>
+                        <th>Contact</th>
+                        <th>Date Filed</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in pending_claims %}
+                    <tr>
+                        <td>#{{ claim.id }}</td>
+                        <td>
+                            <strong>Item #{{ claim.item_id }}</strong>
+                            {% if claim.item %}
+                            <br><small class="text-muted">{{ claim.item.title }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ claim.claimant.username }}</td>
+                        <td>
+                            <strong class="d-block text-truncate" style="max-width: 200px;">{{ claim.reason }}</strong>
+                            <small class="text-muted text-truncate d-block" style="max-width: 200px;">{{ claim.description_proof }}</small>
+                        </td>
+                        <td><small class="fw-semibold">{{ claim.contact_info }}</small></td>
+                        <td>{{ claim.created_at.strftime('%b %d, %Y') }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('head.review_claim', claim_id=claim.id) }}" class="btn btn-sm btn-info text-dark rounded-pill fw-bold">
+                                Review Claim
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 search-card p-4">
+            <i class="bi bi-hand-thumbs-up text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold">No Pending Claim Requests</h5>
+            <p class="text-muted small">All ownership claims have been reviewed.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 3: All Posts -->
+    <div class="tab-pane fade" id="all-posts" role="tabpanel">
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Submitter</th>
+                        <th>Date</th>
+                        <th class="text-end">Manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in all_items %}
+                    <tr>
+                        <td>#{{ item.id }}</td>
+                        <td><strong class="text-dark">{{ item.title }}</strong></td>
+                        <td><span class="badge bg-dark text-uppercase">{{ item.item_type }}</span></td>
+                        <td><span class="badge badge-status {{ item.status_badge_class }}">{{ item.status }}</span></td>
+                        <td>{{ item.submitter.username }}</td>
+                        <td>{{ item.created_at.strftime('%b %d, %Y') }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('head.review_item', item_id=item.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">Manage</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

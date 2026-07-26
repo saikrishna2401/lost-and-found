@@ -1,0 +1,141 @@
+﻿python : test_01_user_authentication (tests_verification.TestLostAndFoundApp.test_01_user_authentication)
+At line:1 char:1
++ python -m unittest -v tests_verification.py 2>&1 | Out-File -Encoding ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_01_user_au...authentication):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Test User Login & Logout. ... D:\lost and found\app.py:39: LegacyAPIWarning: The Query.get() method is considered 
+legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as 
+Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+  user = User.query.get(int(user_id))
+ok
+test_02_item_submission_and_smart_matching 
+(tests_verification.TestLostAndFoundApp.test_02_item_submission_and_smart_matching)
+Test item submission defaults to Pending status and triggers Smart Matching. ... FAIL
+test_03_role_authorization_guards (tests_verification.TestLostAndFoundApp.test_03_role_authorization_guards)
+Test Normal User receives 403 Forbidden when accessing Head or Admin routes. ... ok
+test_04_head_review_and_approval (tests_verification.TestLostAndFoundApp.test_04_head_review_and_approval)
+Test Head reviewer approving a pending post. ... C:\Users\ksaik\AppData\Local\Packages\PythonSoftwareFoundation.Python.
+3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\flask_sqlalchemy\query.py:30: LegacyAPIWarning: 
+The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. 
+The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: 
+https://sqlalche.me/e/b8d9)
+  rv = self.get(ident)
+D:\lost and found\tests_verification.py:99: LegacyAPIWarning: The Query.get() method is considered legacy as of the 
+1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() 
+(deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+  item = Item.query.get(item_id)
+ok
+test_05_claim_workflow (tests_verification.TestLostAndFoundApp.test_05_claim_workflow)
+Test claim submission by normal user and approval by Head. ... FAIL
+test_06_admin_analytics_and_audit_logs (tests_verification.TestLostAndFoundApp.test_06_admin_analytics_and_audit_logs)
+Test Admin Dashboard analytics and Audit Logs. ... ok
+
+======================================================================
+FAIL: test_02_item_submission_and_smart_matching 
+(tests_verification.TestLostAndFoundApp.test_02_item_submission_and_smart_matching)
+Test item submission defaults to Pending status and triggers Smart Matching.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\lost and found\tests_verification.py", line 66, in test_02_item_submission_and_smart_matching
+    self.assertEqual(item.status, Item.STATUS_PENDING)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'Approved' != 'Pending'
+- Approved
++ Pending
+
+
+======================================================================
+FAIL: test_05_claim_workflow (tests_verification.TestLostAndFoundApp.test_05_claim_workflow)
+Test claim submission by normal user and approval by Head.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\lost and found\tests_verification.py", line 117, in test_05_claim_workflow
+    self.assertIn(b'claim request has been submitted', res_claim.data)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'claim request has been submitted' not found in b'<!DOCTYPE html>\n<html lang="en">\n<head>\n    
+<meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Black 
+iPhone 15 Pro - Item Details</title>\n    <!-- Bootstrap 5 CSS -->\n    <link 
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">\n    <!-- Bootstrap 
+Icons -->\n    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" 
+rel="stylesheet">\n    <!-- Google Fonts -->\n    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">\n    
+<!-- Custom CSS -->\n    <link rel="stylesheet" href="/static/css/style.css">\n</head>\n<body>\n\n    <!-- Navigation 
+Bar -->\n    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">\n        <div 
+class="container">\n            <a class="navbar-brand d-flex align-items-center gap-2" href="/">\n                <i 
+class="bi bi-box-seam-fill text-primary fs-4"></i>\n                <span>Lost&Found</span>\n            </a>\n        
+    \n            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+data-bs-target="#navbarContent">\n                <span class="navbar-toggler-icon"></span>\n            </button>\n\n 
+           <div class="collapse navbar-collapse" id="navbarContent">\n                <ul class="navbar-nav me-auto 
+mb-2 mb-lg-0">\n                    <li class="nav-item">\n                        <a class="nav-link" href="/"><i 
+class="bi bi-search me-1"></i> Browse & Search</a>\n                    </li>\n                    \n                  
+  <li class="nav-item">\n                        <a class="nav-link text-warning fw-semibold" 
+href="/user/items/create"><i class="bi bi-plus-circle-fill me-1"></i> Report Lost / Found</a>\n                    
+</li>\n                    \n                </ul>\n\n                <ul class="navbar-nav ms-auto 
+align-items-lg-center gap-lg-2">\n                    \n                        \n                        <!-- 
+Role-based Links -->\n                        \n\n                        \n\n                        <!-- 
+Notifications Bell -->\n                        <li class="nav-item">\n                            <a class="nav-link 
+position-relative" href="/notifications" title="Notifications">\n                                <i class="bi 
+bi-bell-fill fs-5"></i>\n                                \n                                <span 
+class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">\n                             
+       10\n                                </span>\n                                \n                            
+</a>\n                        </li>\n\n                        <!-- User Profile Dropdown -->\n                        
+<li class="nav-item dropdown">\n                            <a class="nav-link dropdown-toggle d-flex 
+align-items-center gap-1" href="#" role="button" data-bs-toggle="dropdown">\n                                <i 
+class="bi bi-person-circle fs-5"></i>\n                                <span>john_doe</span>\n                         
+       <span class="badge bg-secondary text-uppercase ms-1" style="font-size: 0.65rem;">user</span>\n                  
+          </a>\n                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">\n             
+                   <li><a class="dropdown-item" href="/user/dashboard"><i class="bi bi-grid me-2"></i> My 
+Dashboard</a></li>\n                                <li><hr class="dropdown-divider"></li>\n                           
+     <li><a class="dropdown-item text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> Log 
+Out</a></li>\n                            </ul>\n                        </li>\n\n                    \n               
+ </ul>\n            </div>\n        </div>\n    </nav>\n\n    <!-- Main Content Area -->\n    <main 
+class="content-wrapper my-4">\n        <div class="container">\n            <!-- Flash Message Banners -->\n           
+ \n              \n                \n                  <div class="alert alert-info alert-dismissible fade show 
+shadow-sm border-0 mb-4" role="alert">\n                    <i class="bi bi-info-circle-fill me-2"></i> You cannot 
+claim an item that you reported.\n                    <button type="button" class="btn-close" data-bs-dismiss="alert" 
+aria-label="Close"></button>\n                  </div>\n                \n              \n            \n\n            
+\n\n<div class="mb-3">\n    <a href="/" class="btn btn-sm btn-outline-secondary rounded-pill">\n        <i class="bi 
+bi-arrow-left me-1"></i> Back to Items Feed\n    </a>\n</div>\n\n<div class="card search-card shadow 
+overflow-hidden">\n    <div class="row g-0">\n        <!-- Item Image Column -->\n        <div class="col-md-5 
+bg-light d-flex align-items-center justify-content-center p-3 border-end">\n            <img 
+src="/static/images/placeholder.svg" class="img-fluid rounded shadow-sm max-height-400" alt="Black iPhone 15 Pro">\n   
+     </div>\n\n        <!-- Item Info Column -->\n        <div class="col-md-7 p-4 d-flex flex-column 
+justify-content-between">\n            <div>\n                <!-- Type & Status Badges -->\n                <div 
+class="d-flex align-items-center gap-2 mb-3">\n                    <span class="badge bg-dark text-uppercase px-3 py-2 
+fw-bold" style="font-size: 0.8rem;">\n                        found ITEM\n                    </span>\n                
+    <span class="badge badge-status bg-success text-white px-3 py-2">\n                        Status: Approved\n      
+              </span>\n                </div>\n\n                <h2 class="fw-bold mb-3">Black iPhone 15 Pro</h2>\n\n 
+               <!-- Rejection Banner if Rejected -->\n                \n\n                <!-- Meta Details Grid -->\n 
+               <div class="row g-3 mb-4">\n                    <div class="col-6 col-sm-4">\n                        
+<div class="p-2 border rounded bg-light">\n                            <small class="text-muted d-block uppercase" 
+style="font-size: 0.7rem;">CATEGORY</small>\n                            <span class="fw-semibold 
+text-dark">Electronics</span>\n                        </div>\n                    </div>\n                    <div 
+class="col-6 col-sm-4">\n                        <div class="p-2 border rounded bg-light">\n                           
+ <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">LOCATION</small>\n                            
+<span class="fw-semibold text-dark">Central Library</span>\n                        </div>\n                    
+</div>\n                    <div class="col-6 col-sm-4">\n                        <div class="p-2 border rounded 
+bg-light">\n                            <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">EVENT 
+DATE</small>\n                            <span class="fw-semibold text-dark">Jul 24, 2026</span>\n                    
+    </div>\n                    </div>\n                </div>\n\n                <!-- Description -->\n               
+ <h6 class="fw-bold text-secondary mb-2">Detailed Description</h6>\n                <p class="text-secondary 
+leading-relaxed mb-4">Found a black iPhone 15 Pro in a clear silicone case near the library main staircase.</p>\n      
+      </div>\n\n            <!-- Action Controls Bar -->\n            <div class="pt-3 border-top d-flex flex-wrap 
+align-items-center justify-content-between gap-2">\n                <small class="text-muted">Reported by 
+<strong>john_doe</strong> on Jul 26, 2026</small>\n\n                <div class="d-flex align-items-center gap-2">\n   
+                 <!-- Claim Request Button for Found Items -->\n                    \n                        \n       
+                     \n                        \n                    \n\n                    <!-- Edit Pending Post 
+Button for Owner -->\n                    \n\n                    <!-- Moderator Actions for Head / Admin -->\n        
+            \n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n\n\n        </div>\n    
+</main>\n\n    <!-- Footer -->\n    <footer class="text-center">\n        <div class="container">\n            <p 
+class="mb-1 text-light fw-medium">&copy; 2026 Lost & Found Portal. Secure & Transparent Item Recovery.</p>\n           
+ <small class="text-muted">Built with Flask, SQLAlchemy, SQLite/PostgreSQL, & Bootstrap 5.</small>\n        </div>\n   
+ </footer>\n\n    <!-- Bootstrap 5 JS Bundle -->\n    <script 
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>\n    <!-- Custom JS -->\n 
+   <script src="/static/js/main.js"></script>\n    \n</body>\n</html>'
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.814s
+
+FAILED (failures=2)

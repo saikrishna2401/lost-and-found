@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: lost-and-found-app
+    env: python
+    buildCommand: "pip install -r requirements.txt && python seed.py"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.13.14

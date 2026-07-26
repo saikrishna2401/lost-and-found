@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Lost & Found Hub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-container { padding: 2rem 5%; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: rgba(0,0,0,0.05); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { text-align: center; }
+        .stat-card h2 { font-size: 2.5rem; color: var(--primary); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" style="text-decoration:none;"><h2 style="color: var(--primary);">L&F Hub</h2></a>
+        <div class="nav-links" id="nav-links"></div>
+    </nav>
+
+    <div class="admin-container">
+        <h1 style="margin-bottom: 2rem;">Admin Dashboard</h1>
+        
+        <div class="stats-grid" id="statsGrid">
+            <!-- Stats -->
+        </div>
+
+        <div class="glass-card" style="margin-bottom: 2rem;">
+            <h2>Users Management</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2>Posts Management</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="postsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const { token, user } = checkAuth();
+            if (!token || user.role !== 'admin') {
+                window.location.href = '/';
+                return;
+            }
+            fetchStats();
+            fetchUsers();
+            fetchPosts();
+        });
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/admin/stats', { headers: { 'Authorization': `Bearer ${checkAuth().token}` } });
+                const data = await res.json();
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="glass-card stat-card"><h3>Total Users</h3><h2>${data.totalUsers}</h2></div>
+                    <div class="glass-card stat-card"><h3>Total Items</h3><h2>${data.totalItems}</h2></div>
+                    <div class="glass-card stat-card"><h3>Lost Items</h3><h2>${data.totalLost}</h2></div>
+                    <div class="glass-card stat-card"><h3>Found Items</h3><h2>${data.totalFound}</h2></div>
+                `;
+            } catch (err) { console.error(err); }
+        }
+
+        async function fetchUsers() {
+            try {
+                const res = await fetch('/api/admin/users', { headers: { 'Authorization': `Bearer ${checkAuth().token}` } });
+                const users = await res.json();
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td>${u.role}</td>
+                        <td>
+                            ${u.role !== 'admin' ? `<button class="btn btn-danger" onclick="deleteUser('${u.id}')">Ban/Delete</button>` : 'N/A'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+            try {
+                const res = await fetch(`/api/admin/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${checkAuth().token}` }
+                });
+                if (res.ok) {
+                    showToast('User deleted');
+                    fetchUsers();
+                    fetchStats();
+                }
+            } catch (err) {}
+        }
+
+        async function fetchPosts() {
+            try {
+                const res = await fetch('/api/items');
+                const posts = await res.json();
+                const tbody = document.getElementById('postsTableBody');
+                tbody.innerHTML = posts.map(p => `
+                    <tr>
+                        <td>${p.title}</td>
+                        <td><span class="badge ${p.type === 'lost' ? 'badge-lost' : 'badge-found'}">${p.type}</span></td>
+                        <td>${p.status}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deletePost('${p.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {}
+        }
+
+        async function deletePost(id) {
+            if (!confirm('Are you sure you want to delete this post?')) return;
+            try {
+                const res = await fetch(`/api/items/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${checkAuth().token}` }
+                });
+                if (res.ok) {
+                    showToast('Post deleted');
+                    fetchPosts();
+                    fetchStats();
+                }
+            } catch (err) {}
+        }
+    </script>
+</body>
+</html>

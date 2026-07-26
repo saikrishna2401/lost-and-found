@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Category Management - Administrator{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-tags-fill text-danger me-2"></i> Category Management</h2>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary rounded-pill btn-sm">Back to Admin Portal</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card search-card p-4 shadow">
+            <h4 class="fw-bold mb-3">Add Category</h4>
+
+            <form method="POST" action="{{ url_for('admin.manage_categories') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label fw-semibold") }}
+                    {{ form.name(class="form-control", placeholder="Category Name") }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label fw-semibold") }}
+                    {{ form.description(class="form-control", placeholder="Brief description") }}
+                </div>
+
+                <div class="d-grid">
+                    {{ form.submit(class="btn btn-primary rounded-pill fw-bold") }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category Name</th>
+                        <th>Slug</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr class="{% if cat.is_deleted %}table-secondary opacity-75{% endif %}">
+                        <td>#{{ cat.id }}</td>
+                        <td><strong class="text-dark">{{ cat.name }}</strong></td>
+                        <td><code>{{ cat.slug }}</code></td>
+                        <td><small class="text-muted">{{ cat.description or 'N/A' }}</small></td>
+                        <td>
+                            {% if cat.is_deleted %}
+                            <span class="badge bg-secondary">Soft-Deleted</span>
+                            {% else %}
+                            <span class="badge bg-success">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if cat.is_deleted %}
+                            <form method="POST" action="{{ url_for('admin.restore_category', cat_id=cat.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-success rounded-pill">Restore</button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('admin.soft_delete_category', cat_id=cat.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Soft-delete this category?')">Delete</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

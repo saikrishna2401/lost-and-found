@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Lost & Found Hub</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" style="text-decoration:none;"><h2 style="color: var(--primary);">L&F Hub</h2></a>
+        <div class="nav-links" id="nav-links"></div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="glass-card auth-card">
+            <h2 class="text-center" style="margin-bottom: 2rem;">Create Account</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number (Optional)</label>
+                    <input type="tel" id="phone">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-group" style="display:none;">
+                    <label>Role</label>
+                    <select id="role">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Captcha: <span id="captchaText" style="font-weight:bold; letter-spacing: 2px; background: rgba(0,0,0,0.1); padding: 2px 5px;"></span></label>
+                    <input type="text" id="captchaInput" placeholder="Enter Captcha" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Sign Up</button>
+                <p class="text-center mt-1">Already have an account? <a href="/login" style="color: var(--primary);">Login</a></p>
+                <p class="text-center mt-1" style="font-size: 0.8rem; color: var(--text-muted); cursor:pointer;" onclick="document.getElementById('role').parentElement.style.display='block'">Secret: Show Admin Option</p>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+        let currentCaptcha = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentCaptcha = generateCaptcha();
+            document.getElementById('captchaText').innerText = currentCaptcha;
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userInput = document.getElementById('captchaInput').value;
+            if (userInput !== currentCaptcha) {
+                showToast('Invalid Captcha!');
+                currentCaptcha = generateCaptcha();
+                document.getElementById('captchaText').innerText = currentCaptcha;
+                document.getElementById('captchaInput').value = '';
+                return;
+            }
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            try {
+                const res = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, password, role })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showToast('Account created successfully!');
+                    setTimeout(() => window.location.href = '/', 1000);
+                } else {
+                    showToast(data.message || 'Signup failed');
+                }
+            } catch (err) {
+                showToast('Server error');
+            }
+        });
+    </script>
+</body>
+</html>

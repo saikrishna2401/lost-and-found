@@ -1,0 +1,201 @@
+/* 
+  Lost & Found Modern UI Stylesheet 
+  Features vibrant design tokens, glassmorphism card elevation, status badges, and smooth transitions.
+*/
+
+:root {
+  --primary-color: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary-color: #0f172a;
+  --accent-teal: #0d9488;
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #e2e8f0;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #334155;
+}
+
+main.content-wrapper {
+  flex: 1;
+  padding-bottom: 3rem;
+}
+
+/* Custom Navbar */
+.navbar-custom {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-custom .navbar-brand {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.navbar-custom .nav-link {
+  color: #cbd5e1;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+  color: #38bdf8;
+}
+
+/* Hero & Search Banners */
+.hero-banner {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 3.5rem 2rem;
+  box-shadow: 0 20px 25px -5px rgba(49, 46, 129, 0.3);
+}
+
+.search-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+}
+
+/* Custom Cards */
+.item-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  height: 100%;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  border-color: #cbd5e1;
+}
+
+.item-card .card-img-container {
+  height: 200px;
+  overflow: hidden;
+  background-color: #f1f5f9;
+  position: relative;
+}
+
+.item-card .card-img-top {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.item-card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+/* Status Badges */
+.badge-status {
+  padding: 0.4em 0.8em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 50rem;
+}
+
+.bg-teal {
+  background-color: var(--accent-teal) !important;
+}
+
+/* Analytics Cards */
+.stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  border-left: 5px solid var(--primary-color);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: scale(1.02);
+}
+
+.stat-card.stat-warning { border-left-color: #f59e0b; }
+.stat-card.stat-success { border-left-color: #10b981; }
+.stat-card.stat-danger { border-left-color: #ef4444; }
+.stat-card.stat-info { border-left-color: #06b6d4; }
+.stat-card.stat-primary { border-left-color: #3b82f6; }
+.stat-card.stat-teal { border-left-color: #0d9488; }
+.stat-card.stat-secondary { border-left-color: #64748b; }
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--secondary-color);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Table Styling */
+.table-custom {
+  background: white;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.table-custom th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+/* Image Preview */
+.img-preview-box {
+  width: 100%;
+  max-height: 250px;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.img-preview-box img {
+  max-height: 240px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Footer */
+footer {
+  background: var(--secondary-color);
+  color: #94a3b8;
+  padding: 1.5rem 0;
+  margin-top: auto;
+}

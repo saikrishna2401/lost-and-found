@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details - Lost & Found Hub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .details-container {
+            padding: 2rem 5%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .details-container { grid-template-columns: 1fr; }
+        }
+        .details-image {
+            width: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+            max-height: 500px;
+        }
+        .detail-row {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        .detail-value {
+            font-size: 1.1rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" style="text-decoration:none;"><h2 style="color: var(--primary);">L&F Hub</h2></a>
+        <div class="nav-links" id="nav-links"></div>
+    </nav>
+
+    <div class="details-container" id="detailsContent">
+        <!-- Content loaded dynamically -->
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) {
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/items/${id}`);
+                if (!res.ok) throw new Error('Not found');
+                const item = await res.json();
+                
+                const imgUrl = item.image ? item.image : 'https://via.placeholder.com/600x400?text=No+Image';
+                const badgeClass = item.type === 'lost' ? 'badge-lost' : 'badge-found';
+                const { user } = checkAuth();
+                const isOwnerOrAdmin = user && (user.id === item.userId || user.role === 'admin');
+                
+                const resolveBtn = isOwnerOrAdmin && item.status === 'open' 
+                    ? `<button class="btn btn-success" onclick="resolveItem('${item.id}')" style="margin-top:1rem; width:100%;">Mark as Resolved</button>` 
+                    : '';
+
+                const contactSection = user 
+                    ? `<div class="detail-value">${item.contactInfo}</div>` 
+                    : `<div class="detail-value"><a href="/login" style="color:var(--primary);">Login</a> to view contact info</div>`;
+
+                document.getElementById('detailsContent').innerHTML = `
+                    <div>
+                        <img src="${imgUrl}" alt="${item.title}" class="details-image">
+                    </div>
+                    <div class="glass-card">
+                        <span class="badge ${badgeClass}">${item.type.toUpperCase()}</span>
+                        <span style="float:right; color: var(--text-muted); font-weight:bold;">${item.status.toUpperCase()}</span>
+                        <h1 style="margin: 1rem 0;">${item.title}</h1>
+                        
+                        <div class="detail-row">
+                            <div class="detail-label">Description</div>
+                            <div class="detail-value">${item.description}</div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <div class="detail-label">Category</div>
+                            <div class="detail-value">${item.category}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Location</div>
+                            <div class="detail-value">${item.location}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Date</div>
+                            <div class="detail-value">${item.date}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Contact Information</div>
+                            ${contactSection}
+                        </div>
+                        
+                        ${resolveBtn}
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('detailsContent').innerHTML = '<h2>Item not found</h2>';
+            }
+        });
+
+        async function resolveItem(id) {
+            try {
+                const res = await fetch(`/api/items/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${checkAuth().token}`
+                    },
+                    body: JSON.stringify({ status: 'resolved' })
+                });
+                if (res.ok) {
+                    showToast('Item marked as resolved');
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            } catch (err) {
+                showToast('Failed to update status');
+            }
+        }
+    </script>
+</body>
+</html>

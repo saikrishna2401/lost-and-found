@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Account Profile & Password Settings{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center py-3">
+    <div class="col-md-6">
+        <!-- Account Info Card -->
+        <div class="card search-card p-4 shadow mb-4">
+            <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
+                <i class="bi bi-person-bounding-box text-primary display-4"></i>
+                <div>
+                    <h3 class="fw-bold mb-1">{{ current_user.username }}</h3>
+                    <p class="text-muted small mb-0">{{ current_user.email }}</p>
+                    <span class="badge bg-primary text-uppercase mt-1" style="font-size: 0.7rem;">Role: {{ current_user.role }}</span>
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-3"><i class="bi bi-key-fill me-2 text-warning"></i> Change Password</h5>
+
+            <form method="POST" action="{{ url_for('auth.profile') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    {{ form.current_password.label(class="form-label fw-semibold") }}
+                    {{ form.current_password(class="form-control", placeholder="Enter current password") }}
+                    {% for error in form.current_password.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.new_password.label(class="form-label fw-semibold") }}
+                    {{ form.new_password(class="form-control", placeholder="At least 6 characters") }}
+                    {% for error in form.new_password.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
+                    {{ form.confirm_password.label(class="form-label fw-semibold") }}
+                    {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                    {% for error in form.confirm_password.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-grid">
+                    {{ form.submit(class="btn btn-warning btn-lg rounded-pill fw-bold text-dark") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

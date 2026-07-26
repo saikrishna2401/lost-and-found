@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} - Item Details{% endblock %}
+{% block content %}
+
+<div class="mb-3">
+    <a href="{{ url_for('main.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+        <i class="bi bi-arrow-left me-1"></i> Back to Items Feed
+    </a>
+</div>
+
+<div class="card search-card shadow overflow-hidden">
+    <div class="row g-0">
+        <!-- Item Image Column -->
+        <div class="col-md-5 bg-light d-flex align-items-center justify-content-center p-3 border-end">
+            <img src="{{ get_item_image_url(item.image_filename) }}" class="img-fluid rounded shadow-sm max-height-400" alt="{{ item.title }}">
+        </div>
+
+        <!-- Item Info Column -->
+        <div class="col-md-7 p-4 d-flex flex-column justify-content-between">
+            <div>
+                <!-- Type & Status Badges -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-dark text-uppercase px-3 py-2 fw-bold" style="font-size: 0.8rem;">
+                        {{ item.item_type }} ITEM
+                    </span>
+                    <span class="badge badge-status {{ item.status_badge_class }} px-3 py-2">
+                        Status: {{ item.status }}
+                    </span>
+                </div>
+
+                <h2 class="fw-bold mb-3">{{ item.title }}</h2>
+
+                <!-- Rejection Banner if Rejected -->
+                {% if item.status == 'Rejected' and item.rejection_reason %}
+                <div class="alert alert-danger shadow-sm border-0 mb-3" role="alert">
+                    <h6 class="fw-bold mb-1"><i class="bi bi-x-circle-fill me-1"></i> Post Rejection Reason:</h6>
+                    <p class="mb-0 small">{{ item.rejection_reason }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Meta Details Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-sm-4">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">CATEGORY</small>
+                            <span class="fw-semibold text-dark">{{ item.category.name if item.category else 'General' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">LOCATION</small>
+                            <span class="fw-semibold text-dark">{{ item.location }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">EVENT DATE</small>
+                            <span class="fw-semibold text-dark">{{ item.date_event.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <h6 class="fw-bold text-secondary mb-2">Detailed Description</h6>
+                <p class="text-secondary leading-relaxed mb-4">{{ item.description }}</p>
+            </div>
+
+            <!-- Action Controls Bar -->
+            <div class="pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <small class="text-muted">Reported by <strong>{{ item.submitter.username }}</strong> on {{ item.created_at.strftime('%b %d, %Y') }}</small>
+
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Claim Request Button for Found Items -->
+                    {% if item.item_type == 'found' and item.status == 'Approved' %}
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.id != item.user_id %}
+                                {% if existing_claim %}
+                                    <span class="badge bg-warning text-dark p-2">
+                                        <i class="bi bi-hourglass-split me-1"></i> Claim Status: {{ existing_claim.status }}
+                                    </span>
+                                {% else %}
+                                    <a href="{{ url_for('main.submit_claim', item_id=item.id) }}" class="btn btn-success rounded-pill fw-bold px-4">
+                                        <i class="bi bi-hand-thumbs-up-fill me-1"></i> Claim This Item
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-outline-success rounded-pill fw-bold">
+                                Log in to Claim
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
+                    <!-- Edit Pending Post Button for Owner -->
+                    {% if current_user.is_authenticated and current_user.id == item.user_id and item.status == 'Pending' %}
+                    <a href="{{ url_for('user.edit_item', item_id=item.id) }}" class="btn btn-warning rounded-pill fw-bold px-3">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Pending Report
+                    </a>
+                    {% endif %}
+
+                    <!-- Moderator Actions for Head / Admin -->
+                    {% if current_user.is_authenticated and current_user.is_head_or_admin() %}
+                    <a href="{{ url_for('head.review_item', item_id=item.id) }}" class="btn btn-primary rounded-pill fw-bold px-3">
+                        <i class="bi bi-shield-check me-1"></i> Moderate Item
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

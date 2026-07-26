@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found Hub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem; }
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .filters input, .filters select {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h2 style="color: var(--primary);">L&F Hub</h2>
+        <div class="nav-links" id="nav-links"></div>
+    </nav>
+
+    <div class="hero">
+        <h1>Find What You Lost.</h1>
+        <p>A secure platform for the college community to report lost and found items.</p>
+        
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="Search items..." oninput="filterItems()">
+            <select id="typeFilter" onchange="filterItems()">
+                <option value="all">All Types</option>
+                <option value="lost">Lost</option>
+                <option value="found">Found</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid-container" id="itemsGrid">
+        <!-- Items will be loaded here dynamically -->
+    </div>
+
+    <a href="/dashboard" class="fab">+</a>
+
+    <script src="/js/main.js"></script>
+    <script>
+        let allItems = [];
+
+        async function fetchItems() {
+            try {
+                const res = await fetch('/api/items');
+                allItems = await res.json();
+                renderItems(allItems);
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load items');
+            }
+        }
+
+        function filterItems() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const type = document.getElementById('typeFilter').value;
+            
+            const filtered = allItems.filter(item => {
+                const matchSearch = item.title.toLowerCase().includes(search) || item.description.toLowerCase().includes(search);
+                const matchType = type === 'all' || item.type === type;
+                return matchSearch && matchType;
+            });
+            renderItems(filtered);
+        }
+
+        function renderItems(items) {
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = '';
+            
+            if (items.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">No items found.</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'glass-card item-card';
+                card.onclick = () => window.location.href = `/details.html?id=${item.id}`;
+                card.style.cursor = 'pointer';
+                
+                const imgUrl = item.image ? item.image : 'https://via.placeholder.com/400x200?text=No+Image';
+                const badgeClass = item.type === 'lost' ? 'badge-lost' : 'badge-found';
+                
+                card.innerHTML = `
+                    <img src="${imgUrl}" alt="${item.title}">
+                    <div class="item-card-body">
+                        <span class="badge ${badgeClass}">${item.type.toUpperCase()}</span>
+                        <span style="float:right; font-size: 0.8rem; color: var(--text-muted);">${item.status}</span>
+                        <h3 style="margin: 0.5rem 0;">${item.title}</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">${item.location}</p>
+                        <p style="font-size: 0.9rem;">${item.date}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchItems);
+    </script>
+</body>
+</html>

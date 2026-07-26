@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}System Analytics & Admin Dashboard{% endblock %}
+{% block content %}
+
+<!-- Header Card -->
+<div class="search-card p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-danger me-2"></i> Administrator System Analytics</h2>
+        <p class="text-muted mb-0">Full administrative control, user role management, system metrics, and audit logs.</p>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-dark rounded-pill fw-semibold"><i class="bi bi-people-fill me-1"></i> Users</a>
+        <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-outline-dark rounded-pill fw-semibold"><i class="bi bi-tags-fill me-1"></i> Categories</a>
+        <a href="{{ url_for('admin.manage_posts') }}" class="btn btn-outline-dark rounded-pill fw-semibold"><i class="bi bi-file-post me-1"></i> System Posts</a>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-dark rounded-pill fw-semibold"><i class="bi bi-journal-text me-1"></i> Audit Logs</a>
+    </div>
+</div>
+
+<!-- Primary Metric Cards Row -->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="stat-card stat-primary">
+            <div class="stat-value">{{ active_users }}</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-info">
+            <div class="stat-value">{{ total_claims }}</div>
+            <div class="stat-label">Total Claims</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-danger">
+            <div class="stat-value">{{ total_lost }}</div>
+            <div class="stat-label">Total Lost Reports</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-success">
+            <div class="stat-value">{{ total_found }}</div>
+            <div class="stat-label">Total Found Reports</div>
+        </div>
+    </div>
+</div>
+
+<!-- 7-Stage Item Status Lifecycle Breakdown Row -->
+<h4 class="fw-bold mb-3">Item Lifecycle Status Distribution</h4>
+<div class="row row-cols-2 row-cols-md-4 row-cols-lg-7 g-2 mb-4">
+    <div class="col">
+        <div class="stat-card stat-warning p-3 text-center">
+            <div class="fs-3 fw-bold text-dark">{{ status_counts.get('Pending', 0) }}</div>
+            <div class="stat-label" style="font-size: 0.7rem;">Pending</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-info p-3 text-center">
+            <div class="fs-3 fw-bold text-dark">{{ status_counts.get('Under Review', 0) }}</div>
+            <div class="stat-label" style="font-size: 0.7rem;">Under Review</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-success p-3 text-center">
+            <div class="fs-3 fw-bold text-success">{{ status_counts.get('Approved', 0) }}</div>
+            <div class="stat-label" style="font-size: 0.7rem;">Approved</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-danger p-3 text-center">
+            <div class="fs-3 fw-bold text-danger">{{ status_counts.get('Rejected', 0) }}</div>
+            <div class="stat-label" style="font-size: 0.7rem;">Rejected</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-primary p-3 text-center">
+            <div class="fs-3 fw-bold text-primary">{{ status_counts.get('Claimed', 0) }}</div>
+            <div class="stat-label" style="font-size: 0.7rem;">Claimed</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-teal p-3 text-center">
+            <div class="fs-3 fw-bold text-teal">{{ status_counts.get('Returned', 0) }}</div>
+            <div class="stat-label" style="font-size: 0.7rem;">Returned</div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card stat-secondary p-3 text-center">
+            <div class="fs-3 fw-bold text-secondary">{{ status_counts.get('Archived', 0) }}</div>
+            <div class="stat-label" style="font-size: 0.7rem;">Archived</div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Placeholders Grid -->
+<div class="row g-4 mb-4">
+    <!-- Category Distribution -->
+    <div class="col-md-6">
+        <div class="card search-card p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart-fill text-primary me-2"></i> Category Distribution</h5>
+            <div class="list-group list-group-flush border-top">
+                {% for cat in category_data %}
+                <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2">
+                    <span>{{ cat.name }}</span>
+                    <span class="badge bg-primary rounded-pill px-3 py-1">{{ cat.count }} items</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick System Health -->
+    <div class="col-md-6">
+        <div class="card search-card p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="bi bi-activity text-success me-2"></i> System Health & Storage</h5>
+            <ul class="list-group list-group-flush border-top">
+                <li class="list-group-item bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-database me-2 text-info"></i> Database Driver</span>
+                    <span class="badge bg-dark">SQLite / PostgreSQL Ready</span>
+                </li>
+                <li class="list-group-item bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-shield-check me-2 text-success"></i> CSRF & XSS Security</span>
+                    <span class="badge bg-success">Active & Enforced</span>
+                </li>
+                <li class="list-group-item bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-cloud-arrow-up me-2 text-warning"></i> File Storage Service</span>
+                    <span class="badge bg-secondary">Modular (Local / Cloudinary Ready)</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

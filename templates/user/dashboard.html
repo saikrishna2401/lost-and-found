@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard - Lost & Found{% endblock %}
+{% block content %}
+
+<!-- Header Card -->
+<div class="search-card p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <h2 class="fw-bold mb-1">Welcome, {{ current_user.username }}</h2>
+        <p class="text-muted mb-0">Track your reported lost & found items and claim submission statuses.</p>
+    </div>
+    <a href="{{ url_for('user.create_item') }}" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm">
+        <i class="bi bi-plus-circle-fill me-1"></i> Report Lost / Found Item
+    </a>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-pills mb-4 gap-2" id="dashboardTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active rounded-pill fw-semibold" id="items-tab" data-bs-toggle="tab" data-bs-target="#items-pane" type="button" role="tab">
+            <i class="bi bi-box-seam me-1"></i> My Reported Items ({{ items|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill fw-semibold" id="claims-tab" data-bs-toggle="tab" data-bs-target="#claims-pane" type="button" role="tab">
+            <i class="bi bi-hand-thumbs-up me-1"></i> My Claims ({{ claims|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="dashboardTabsContent">
+    
+    <!-- Tab 1: Reported Items -->
+    <div class="tab-pane fade show active" id="items-pane" role="tabpanel">
+        {% if items %}
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Date Event</th>
+                        <th>Status</th>
+                        <th>Details / Rejection Note</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="{{ get_item_image_url(item.image_filename) }}" class="rounded shadow-sm" style="width: 48px; height: 48px; object-fit: cover;" alt="">
+                                <div>
+                                    <strong class="d-block text-dark">{{ item.title }}</strong>
+                                    <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ item.location }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-dark text-uppercase">{{ item.item_type }}</span>
+                        </td>
+                        <td>{{ item.category.name if item.category else 'General' }}</td>
+                        <td>{{ item.date_event.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <span class="badge badge-status {{ item.status_badge_class }}">
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if item.status == 'Rejected' and item.rejection_reason %}
+                                <span class="text-danger small"><i class="bi bi-x-circle me-1"></i>{{ item.rejection_reason }}</span>
+                            {% else %}
+                                <span class="text-muted small">Updated {{ item.updated_at.strftime('%b %d') }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('main.item_detail', item_id=item.id) }}" class="btn btn-sm btn-outline-primary rounded-pill me-1">View</a>
+                            {% if item.status == 'Pending' %}
+                            <a href="{{ url_for('user.edit_item', item_id=item.id) }}" class="btn btn-sm btn-warning rounded-pill">Edit</a>
+                            {% else %}
+                            <button class="btn btn-sm btn-light border text-muted rounded-pill" disabled title="Only pending posts can be edited">Edit</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 search-card p-4">
+            <i class="bi bi-folder-plus text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold">No Submissions Found</h5>
+            <p class="text-muted small">You haven't reported any lost or found items yet.</p>
+            <a href="{{ url_for('user.create_item') }}" class="btn btn-primary rounded-pill">Report First Item</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 2: My Claims -->
+    <div class="tab-pane fade" id="claims-pane" role="tabpanel">
+        {% if claims %}
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Target Item</th>
+                        <th>Reason</th>
+                        <th>Submitted On</th>
+                        <th>Claim Status</th>
+                        <th>Review Note</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in claims %}
+                    <tr>
+                        <td>
+                            <strong>Item #{{ claim.item_id }}</strong>
+                            {% if claim.item %}
+                            <br><small class="text-muted">{{ claim.item.title }}</small>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-secondary">{{ claim.reason|truncate(50) }}</small></td>
+                        <td>{{ claim.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <span class="badge badge-status {{ claim.status_badge_class }}">
+                                {{ claim.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if claim.status == 'Rejected' and claim.rejection_reason %}
+                            <span class="text-danger small">{{ claim.rejection_reason }}</span>
+                            {% else %}
+                            <span class="text-muted small">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('main.item_detail', item_id=claim.item_id) }}" class="btn btn-sm btn-outline-primary rounded-pill">View Item</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 search-card p-4">
+            <i class="bi bi-file-earmark-check text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold">No Claim Requests Filed</h5>
+            <p class="text-muted small">When you spot a found item that belongs to you, submit a claim from its detail page.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

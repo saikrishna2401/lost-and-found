@@ -1,0 +1,92 @@
+"""
+Flask Application Factory Module.
+Initializes extensions, registers blueprints, context processors, error handlers, and security headers.
+"""
+from flask import Flask, render_template
+from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager, current_user
+
+from config import Config
+from models import db
+from models.user import User
+from models.notification import Notification
+
+from routes.auth import auth_bp
+from routes.main import main_bp
+from routes.user import user_bp
+from routes.head import head_bp
+from routes.admin import admin_bp
+
+from utils.helpers import get_item_image_url
+
+def create_app(config_class=Config):
+    """Factory function to initialize Flask application instance."""
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+
+    # Initialize extensions
+    db.init_app(app)
+    CSRFProtect(app)
+
+    # Auto-create database tables on startup if they don't exist yet
+    with app.app_context():
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"Database Auto-Creation Note: {e}")
+
+    # Initialize Flask-Login
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message_category = 'info'
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        user = db.session.get(User, int(user_id))
+        if user and not user.is_deleted and user.is_active:
+            return user
+        return None
+
+    # Register Blueprints
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(user_bp)
+    app.register_blueprint(head_bp)
+    app.register_blueprint(admin_bp)
+
+    # Register Global Template Functions & Context Processors
+    app.jinja_env.globals.update(get_item_image_url=get_item_image_url)
+
+    @app.context_processor
+    def inject_globals():
+        """Inject unread notification count and global helpers into all Jinja templates."""
+        unread_count = 0
+        if current_user.is_authenticated:
+            unread_count = Notification.query.filter_by(
+                user_id=current_user.id,
+                is_read=False
+            ).count()
+        return dict(unread_notification_count=unread_count)
+
+    # Error Handlers
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        return render_template('errors/403.html'), 403
+
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        return render_template('errors/500.html'), 500
+
+    return app
+
+# WSGI entrypoint for Gunicorn and Flask CLI
+app = create_app()
+
+if __name__ == '__main__':
+    app.run(debug=True)

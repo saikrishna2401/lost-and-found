@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}In-App Notifications{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center py-2">
+    <div class="col-md-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="fw-bold mb-0"><i class="bi bi-bell-fill text-primary me-2"></i> Notifications Inbox</h2>
+            <span class="badge bg-primary rounded-pill px-3 py-2">{{ notifications|length }} total</span>
+        </div>
+
+        {% if notifications %}
+        <div class="list-group shadow-sm border-0">
+            {% for n in notifications %}
+            <div class="list-group-item list-group-item-action p-3 {% if not n.is_read %}bg-light border-start border-primary border-4{% endif %} mb-2 rounded shadow-sm">
+                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                    <h6 class="fw-bold mb-0 {% if not n.is_read %}text-primary{% endif %}">{{ n.title }}</h6>
+                    <small class="text-muted">{{ n.created_at.strftime('%b %d, %H:%M') }}</small>
+                </div>
+                <p class="mb-2 text-secondary small">{{ n.message }}</p>
+                <div class="d-flex align-items-center justify-content-between">
+                    {% if n.link %}
+                    <a href="{{ n.link }}" class="btn btn-sm btn-outline-primary rounded-pill px-3" style="font-size: 0.75rem;">View Action</a>
+                    {% else %}
+                    <span></span>
+                    {% endif %}
+
+                    {% if not n.is_read %}
+                    <form method="POST" action="{{ url_for('main.mark_notification_read', notif_id=n.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-link text-muted p-0" style="font-size: 0.75rem;">Mark as Read</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 search-card p-4">
+            <i class="bi bi-bell-slash text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold">No Notifications Yet</h5>
+            <p class="text-muted small">You will receive alerts here when your post status updates, claims are reviewed, or smart matches are detected.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
