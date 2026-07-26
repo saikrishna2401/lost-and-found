@@ -9,7 +9,7 @@ A full-stack, enterprise-grade Lost and Found web application built using **Pyth
 1. **Role-Based Access Control (RBAC)**:
    - **Normal User**: Register, report lost/found items with image uploads, edit *only* their own pending posts, view approved public posts, search/filter, submit ownership claims, receive in-app notifications.
    - **Head Reviewer**: Moderation queue, approve or reject pending items with mandatory rejection reasons, review ownership claims, update item lifecycle statuses (`Under Review`, `Approved`, `Rejected`, `Claimed`, `Returned`, `Archived`).
-   - **Administrator**: Full system access, 10-metric analytics dashboard with category breakdown, user management (create, change role, suspend/activate, soft-delete, restore), soft-delete & restore posts, category manager, system-wide Audit Trail viewer.
+   - **Administrator**: Full system access, 10-metric analytics dashboard with category breakdown, user management (create, change role, suspend/activate, soft-delete, restore, reset any user password), soft-delete & restore posts, category manager, system-wide Audit Trail viewer.
 
 2. **7-Stage Item Status Lifecycle**:
    - `Pending` ➔ `Under Review` ➔ `Approved` / `Rejected` ➔ `Claimed` ➔ `Returned` ➔ `Archived`.
@@ -107,18 +107,14 @@ Running `python seed.py` automatically generates three default accounts for test
 1. Push your project code to a GitHub or GitLab repository.
 2. Log in to [Render](https://render.com/).
 3. Click **New +** ➔ **Web Service**.
-4. Connect your Git repository.
+4. Connect your Git repository (`saikrishna2401/lost-and-found`).
 5. Configure the web service settings:
    - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt && python seed.py`
+   - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `gunicorn app:app`
 6. Add Environment Variables under **Environment**:
    - `SECRET_KEY`: (Click 'Generate' or enter a secure random string)
-   - `DATABASE_URL`: (Optional) Attach a Render PostgreSQL database internal URI. The app will automatically patch `postgres://` to `postgresql://`.
+   - `DATABASE_URL`: `postgresql://postgres.cvdmqgaauhnysytojwyh:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres`
+   - `SUPABASE_URL`: `https://cvdmqgaauhnysytojwyh.supabase.co`
+   - `SUPABASE_KEY`: `sb_publishable_UAzzySBLlCA5LapdGh04fA_AYvvs6fc`
 7. Click **Create Web Service**. Render will build and deploy your application automatically!
-
----
-
-## License & Usage
-
-This project is created for educational and community lost-and-found management purposes.
