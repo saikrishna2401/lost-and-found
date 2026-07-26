@@ -40,7 +40,6 @@ class Config:
         if db_url.startswith('postgresql://') and '://' in db_url:
             scheme, body = db_url.split('://', 1)
             if '@' in body:
-                # The last '@' separates user:password from host:port/dbname
                 userpass, host_db = body.rsplit('@', 1)
                 if ':' in userpass:
                     username, password = userpass.split(':', 1)
@@ -50,12 +49,17 @@ class Config:
 
         SQLALCHEMY_DATABASE_URI = db_url
     else:
-        # Local SQLite database path inside instance folder
         instance_dir = os.path.join(BASE_DIR, 'instance')
         os.makedirs(instance_dir, exist_ok=True)
         SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(instance_dir, 'lost_and_found.db')}"
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Engine pool options to prevent stale cloud connections
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
 
     # Upload configuration
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')

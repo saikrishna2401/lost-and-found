@@ -2,6 +2,7 @@
 Flask Application Factory Module.
 Initializes extensions, registers blueprints, context processors, error handlers, and security headers.
 """
+import os
 from flask import Flask, render_template
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager, current_user
@@ -33,7 +34,7 @@ def create_app(config_class=Config):
         try:
             db.create_all()
         except Exception as e:
-            print(f"Database Auto-Creation Note: {e}")
+            print(f"Cloud Database Initialization Warning: {e}")
 
     # Initialize Flask-Login
     login_manager = LoginManager()
@@ -43,9 +44,12 @@ def create_app(config_class=Config):
 
     @login_manager.user_loader
     def load_user(user_id):
-        user = db.session.get(User, int(user_id))
-        if user and not user.is_deleted and user.is_active:
-            return user
+        try:
+            user = db.session.get(User, int(user_id))
+            if user and not user.is_deleted and user.is_active:
+                return user
+        except Exception:
+            db.session.rollback()
         return None
 
     # Register Blueprints
@@ -63,10 +67,13 @@ def create_app(config_class=Config):
         """Inject unread notification count and global helpers into all Jinja templates."""
         unread_count = 0
         if current_user.is_authenticated:
-            unread_count = Notification.query.filter_by(
-                user_id=current_user.id,
-                is_read=False
-            ).count()
+            try:
+                unread_count = Notification.query.filter_by(
+                    user_id=current_user.id,
+                    is_read=False
+                ).count()
+            except Exception:
+                db.session.rollback()
         return dict(unread_notification_count=unread_count)
 
     # Error Handlers
