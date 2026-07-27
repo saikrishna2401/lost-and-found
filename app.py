@@ -11,6 +11,7 @@ from config import Config
 from models import db
 from models.user import User
 from models.notification import Notification
+from models.found_report import FoundReport
 
 from routes.auth import auth_bp
 from routes.main import main_bp

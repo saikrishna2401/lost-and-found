@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Review Found Item Report #{{ report.id }}{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center py-2">
+    <div class="col-md-9">
+        <div class="card search-card p-4 shadow">
+            
+            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                <div>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-shield-lock text-info me-2"></i> Review Found Item Report</h3>
+                    <p class="text-muted small mb-0">Report #{{ report.id }} for Lost Item #{{ item.id }}: <strong>{{ item.title }}</strong></p>
+                </div>
+                <span class="badge badge-status {{ report.status_badge_class }} fs-6">
+                    Status: {{ report.status }}
+                </span>
+            </div>
+
+            <!-- Item & Finder Info Grid -->
+            <div class="row g-3 mb-4">
+                <!-- Lost Item Info -->
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light h-100">
+                        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-file-earmark-text me-1"></i> Original Lost Item Info</h6>
+                        <p class="mb-1"><strong>Title:</strong> {{ item.title }}</p>
+                        <p class="mb-1"><strong>Lost At:</strong> {{ item.location }}</p>
+                        <p class="mb-1"><strong>Owner:</strong> {{ item.submitter.username }} ({{ item.submitter.email }})</p>
+                        <p class="mb-0"><strong>Description:</strong> {{ item.description|truncate(120) }}</p>
+                    </div>
+                </div>
+
+                <!-- Finder Submitted Contact Info -->
+                <div class="col-md-6">
+                    <div class="p-3 border border-success rounded bg-light h-100">
+                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-person-badge-fill me-1"></i> Finder Contact Details</h6>
+                        <p class="mb-1"><strong>Finder:</strong> {{ report.finder.username }}</p>
+                        <p class="mb-1"><strong>Phone Number:</strong> <span class="badge bg-success font-monospace fs-6">{{ report.phone_number }}</span></p>
+                        <p class="mb-1"><strong>Email:</strong> <span class="badge bg-info text-dark font-monospace fs-6">{{ report.email }}</span></p>
+                        <p class="mb-0"><strong>Submitted On:</strong> {{ report.created_at.strftime('%b %d, %Y %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finder Submitted Photo & Description -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <div class="p-3 border rounded text-center bg-white h-100">
+                        <h6 class="fw-bold text-secondary mb-2">Finder Submitted Photo</h6>
+                        <img src="{{ get_item_image_url(report.image_filename) }}" class="img-fluid rounded shadow-sm max-height-250" alt="Finder photo">
+                    </div>
+                </div>
+
+                <div class="col-md-7">
+                    <div class="p-3 border border-info rounded bg-light h-100">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Finder Location & Discovery Details</h6>
+                        <p class="mb-0 text-secondary leading-relaxed">{{ report.description }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Moderation Form -->
+            <form method="POST" action="{{ url_for('head.review_found_report', report_id=report.id) }}" class="p-3 border rounded bg-white shadow-sm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <h5 class="fw-bold mb-3">Moderation Decision</h5>
+
+                <div class="mb-3">
+                    <label for="action" class="form-label fw-semibold">Action</label>
+                    <select class="form-select" id="action" name="action" required>
+                        <option value="approve">Approve Report (Unlock Finder Contact for Lost Item Owner & Notify)</option>
+                        <option value="reject">Reject Report (Provide Reason)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="rejection-reason-box" style="display: none;">
+                    <label for="rejection_reason" class="form-label fw-semibold text-danger">Rejection Reason</label>
+                    <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="2" placeholder="Explain why the report was rejected."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold px-4">Submit Decision</button>
+                    <a href="{{ url_for('head.dashboard') }}" class="btn btn-outline-secondary btn-lg rounded-pill">Back to Queue</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

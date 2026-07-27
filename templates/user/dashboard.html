@@ -25,6 +25,11 @@
             <i class="bi bi-hand-thumbs-up me-1"></i> My Claims ({{ claims|length }})
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill fw-semibold" id="found-reports-tab" data-bs-toggle="tab" data-bs-target="#found-reports-pane" type="button" role="tab">
+            <i class="bi bi-check-circle-fill me-1"></i> Found Reports Submitted ({{ found_reports|length }})
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content" id="dashboardTabsContent">
@@ -155,6 +160,68 @@
             <i class="bi bi-file-earmark-check text-muted display-4 mb-3 d-block"></i>
             <h5 class="fw-bold">No Claim Requests Filed</h5>
             <p class="text-muted small">When you spot a found item that belongs to you, submit a claim from its detail page.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 3: My Found Reports Submitted -->
+    <div class="tab-pane fade" id="found-reports-pane" role="tabpanel">
+        {% if found_reports %}
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Lost Item</th>
+                        <th>Details Provided</th>
+                        <th>Date Submitted</th>
+                        <th>Status</th>
+                        <th>Moderator Note</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rpt in found_reports %}
+                    <tr>
+                        <td>
+                            {% if rpt.item %}
+                            <strong>{{ rpt.item.title }}</strong>
+                            <br><small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ rpt.item.location }}</small>
+                            {% else %}
+                            <span>Item #{{ rpt.item_id }}</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-secondary">{{ rpt.description|truncate(50) }}</small></td>
+                        <td>{{ rpt.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <span class="badge badge-status {{ rpt.status_badge_class }}">
+                                {{ rpt.status }}
+                            </span>
+                            {% if rpt.status == 'Approved' %}
+                            <span class="d-block mt-1 badge bg-success text-white small">
+                                <i class="bi bi-check-circle-fill me-1"></i> Shared with Owner
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if rpt.status == 'Rejected' and rpt.rejection_reason %}
+                            <span class="text-danger small">{{ rpt.rejection_reason }}</span>
+                            {% else %}
+                            <span class="text-muted small">Pending Review</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('main.item_detail', item_id=rpt.item_id) }}" class="btn btn-sm btn-outline-primary rounded-pill">View Item</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 search-card p-4">
+            <i class="bi bi-box-seam text-muted display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold">No Found Reports Submitted</h5>
+            <p class="text-muted small">When you spot an item reported as lost by another user, click "I Found This Item" on its detail page to submit a report.</p>
         </div>
         {% endif %}
     </div>

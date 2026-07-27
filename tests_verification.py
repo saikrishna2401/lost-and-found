@@ -235,5 +235,63 @@ class TestLostAndFoundApp(unittest.TestCase):
 
         self.assertEqual(res_head_reset.status_code, 403)
 
+    def test_10_i_found_this_item_workflow(self):
+        """Test 'I Found This Item' workflow for Lost Items including privacy guards and approval contact unlocking."""
+        from models.found_report import FoundReport
+        import io
+
+        # 1. Create an approved Lost Item reported by john_doe (self.user_id)
+        with self.app.app_context():
+            lost_item = Item(
+                title='Lost Rolex Watch',
+                item_type='lost',
+                category_id=self.category_id,
+                description='Lost gold Rolex watch near library.',
+                location='University Library',
+                date_event=date.today(),
+                phone_number='+15551112233',
+                status=Item.STATUS_APPROVED,
+                user_id=self.user_id
+            )
+            db.session.add(lost_item)
+            db.session.commit()
+            lost_item_id = lost_item.id
+
+        # 2. Log in as admin (acting as finder) and report finding this item
+        self.login('admin', 'Admin@123')
+        fake_image = (io.BytesIO(b"fake image content"), 'found_watch.jpg')
+        res_submit = self.client.post(f'/items/{lost_item_id}/report_found', data=dict(
+            image=fake_image,
+            description='Found gold Rolex watch on 2nd floor library desk.',
+            phone_number='+15559998877',
+            email='finder_admin@example.com'
+        ), content_type='multipart/form-data', follow_redirects=True)
+
+        self.assertIn(b'submitted successfully', res_submit.data.lower())
+
+        with self.app.app_context():
+            report = FoundReport.query.filter_by(item_id=lost_item_id).first()
+            self.assertIsNotNone(report)
+            self.assertEqual(report.status, FoundReport.STATUS_PENDING)
+
+            # Test privacy guard: Lost Item owner cannot view contact details while Pending
+            user_owner = db.session.get(User, self.user_id)
+            self.assertFalse(report.can_view_contact(user_owner))
+
+        # 3. Log in as Head Reviewer and approve the found report
+        self.login('head', 'Head@123')
+        res_review = self.client.post(f'/head/found_reports/{report.id}/review', data=dict(
+            action='approve'
+        ), follow_redirects=True)
+
+        self.assertIn(b'approved', res_review.data.lower())
+
+        # 4. Verify contact details are now unlocked for the Lost Item owner
+        with self.app.app_context():
+            approved_report = db.session.get(FoundReport, report.id)
+            self.assertEqual(approved_report.status, FoundReport.STATUS_APPROVED)
+            user_owner = db.session.get(User, self.user_id)
+            self.assertTrue(approved_report.can_view_contact(user_owner))
+
 if __name__ == '__main__':
     unittest.main()

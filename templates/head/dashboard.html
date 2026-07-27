@@ -5,11 +5,12 @@
 <div class="search-card p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
     <div>
         <h2 class="fw-bold mb-1"><i class="bi bi-clipboard-check text-info me-2"></i> Moderation Queue</h2>
-        <p class="text-muted mb-0">Review pending lost/found submissions and ownership claims.</p>
+        <p class="text-muted mb-0">Review pending lost/found submissions, ownership claims, and found item reports.</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
         <span class="badge bg-warning text-dark fs-6 px-3 py-2">Pending Items: {{ pending_items|length }}</span>
-        <span class="badge bg-info text-dark fs-6 px-3 py-2">Pending Claims: {{ pending_claims|length }}</span>
+        <span class="badge bg-info text-dark fs-6 px-3 py-2">Claims: {{ pending_claims|length }}</span>
+        <span class="badge bg-success text-white fs-6 px-3 py-2">Found Reports: {{ pending_found_reports|length }}</span>
     </div>
 </div>
 
@@ -23,6 +24,11 @@
     <li class="nav-item">
         <button class="nav-link rounded-pill fw-semibold" id="pending-claims-tab" data-bs-toggle="tab" data-bs-target="#pending-claims" type="button">
             <i class="bi bi-hand-thumbs-up me-1"></i> Claim Requests ({{ pending_claims|length }})
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link rounded-pill fw-semibold" id="pending-found-tab" data-bs-toggle="tab" data-bs-target="#pending-found-reports" type="button">
+            <i class="bi bi-check-circle-fill me-1"></i> Found Reports ({{ pending_found_reports|length }})
         </button>
     </li>
     <li class="nav-item">
@@ -131,6 +137,68 @@
             <i class="bi bi-hand-thumbs-up text-muted display-4 mb-3 d-block"></i>
             <h5 class="fw-bold">No Pending Claim Requests</h5>
             <p class="text-muted small">All ownership claims have been reviewed.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 3: Pending Found Reports -->
+    <div class="tab-pane fade" id="pending-found-reports" role="tabpanel">
+        {% if pending_found_reports %}
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Lost Item</th>
+                        <th>Finder</th>
+                        <th>Finder Details</th>
+                        <th>Finder Contact</th>
+                        <th>Submitted On</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rpt in pending_found_reports %}
+                    <tr>
+                        <td>#{{ rpt.id }}</td>
+                        <td>
+                            {% if rpt.item %}
+                            <strong class="d-block text-dark">{{ rpt.item.title }}</strong>
+                            <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ rpt.item.location }}</small>
+                            {% else %}
+                            <span class="text-muted">Item #{{ rpt.item_id }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if rpt.finder %}
+                            <strong>{{ rpt.finder.username }}</strong>
+                            {% else %}
+                            <span>User #{{ rpt.user_id }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-secondary d-block text-truncate" style="max-width: 220px;">{{ rpt.description }}</small>
+                        </td>
+                        <td>
+                            <small class="fw-bold font-monospace d-block text-success">{{ rpt.phone_number }}</small>
+                            <small class="text-muted d-block">{{ rpt.email }}</small>
+                        </td>
+                        <td>{{ rpt.created_at.strftime('%b %d, %Y') }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('head.review_found_report', report_id=rpt.id) }}" class="btn btn-sm btn-success rounded-pill fw-bold">
+                                Review Report
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 search-card p-4">
+            <i class="bi bi-check-circle text-success display-4 mb-3 d-block"></i>
+            <h5 class="fw-bold">No Pending Found Item Reports</h5>
+            <p class="text-muted small">All "I Found This Item" submissions have been processed.</p>
         </div>
         {% endif %}
     </div>

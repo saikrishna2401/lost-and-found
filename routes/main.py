@@ -9,8 +9,10 @@ from models import db
 from models.item import Item
 from models.category import Category
 from models.claim import ClaimRequest
+from models.found_report import FoundReport
 from models.notification import Notification
-from forms import ClaimForm
+from forms import ClaimForm, FoundReportForm
+from services.storage_service import StorageService
 from services.audit_service import AuditService
 from services.notification_service import NotificationService
 
@@ -110,12 +112,88 @@ def item_detail(item_id):
         if current_user.id != item.user_id and not current_user.is_head_or_admin():
             abort(403)
 
-    # Check if logged-in user has already submitted a claim for this item
+    # Check existing claim or found report for logged-in user
     existing_claim = None
+    existing_found_report = None
+    approved_found_reports = []
+
     if current_user.is_authenticated:
         existing_claim = ClaimRequest.query.filter_by(item_id=item.id, user_id=current_user.id).first()
+        existing_found_report = FoundReport.query.filter_by(item_id=item.id, user_id=current_user.id).first()
 
-    return render_template('main/item_detail.html', item=item, existing_claim=existing_claim)
+        # Lost Item owner or Head/Admin can view approved found reports
+        if current_user.id == item.user_id or current_user.is_head_or_admin():
+            approved_found_reports = FoundReport.query.filter_by(item_id=item.id, status=FoundReport.STATUS_APPROVED).all()
+
+    return render_template(
+        'main/item_detail.html',
+        item=item,
+        existing_claim=existing_claim,
+        existing_found_report=existing_found_report,
+        approved_found_reports=approved_found_reports
+    )
+
+@main_bp.route('/items/<int:item_id>/report_found', methods=['GET', 'POST'])
+@login_required
+def report_found_item(item_id):
+    """Submit a report for finding a Lost Item."""
+    item = Item.query.get_or_404(item_id)
+
+    if item.is_deleted or item.item_type != 'lost' or item.status not in [Item.STATUS_APPROVED, Item.STATUS_CLAIMED]:
+        flash('This lost item report is not available for found submissions.', 'warning')
+        return redirect(url_for('main.item_detail', item_id=item.id))
+
+    if item.user_id == current_user.id:
+        flash('You cannot report finding your own lost item.', 'info')
+        return redirect(url_for('main.item_detail', item_id=item.id))
+
+    # Prevent duplicate found reports by the same finder
+    existing_report = FoundReport.query.filter_by(item_id=item.id, user_id=current_user.id).first()
+    if existing_report:
+        flash('You have already submitted a found report for this lost item.', 'info')
+        return redirect(url_for('main.item_detail', item_id=item.id))
+
+    form = FoundReportForm()
+    if request.method == 'GET':
+        # Pre-fill finder's email if available
+        if hasattr(current_user, 'email') and current_user.email:
+            form.email.data = current_user.email
+
+    if form.validate_on_submit():
+        image_filename = None
+        if form.image.data:
+            try:
+                image_filename = StorageService.save_image(form.image.data)
+            except ValueError as e:
+                flash(str(e), 'danger')
+                return render_template('main/report_found.html', form=form, item=item)
+
+        found_report = FoundReport(
+            item_id=item.id,
+            user_id=current_user.id,
+            image_filename=image_filename,
+            description=form.description.data.strip(),
+            phone_number=form.phone_number.data.strip(),
+            email=form.email.data.strip().lower(),
+            status=FoundReport.STATUS_PENDING
+        )
+        db.session.add(found_report)
+        db.session.commit()
+
+        AuditService.log('SUBMITTED_FOUND_REPORT', target_type='FoundReport', target_id=found_report.id, details=f"Item ID: {item.id}")
+
+        # Notify Lost Item Owner that someone reported finding their item (pending review)
+        NotificationService.send_notification(
+            user_id=item.user_id,
+            title="Found Report Submitted for Your Item",
+            message=f"Someone reported finding your lost item '{item.title}'. It is currently pending review by moderators.",
+            link=url_for('main.item_detail', item_id=item.id)
+        )
+
+        flash('Your report has been submitted successfully! Moderators will review your submission before sharing your contact details with the item owner.', 'success')
+        return redirect(url_for('main.item_detail', item_id=item.id))
+
+    return render_template('main/report_found.html', form=form, item=item)
 
 @main_bp.route('/items/<int:item_id>/claim', methods=['GET', 'POST'])
 @login_required

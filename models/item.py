@@ -50,6 +50,7 @@ class Item(db.Model):
 
     # Relationships
     claims = db.relationship('ClaimRequest', backref='item', lazy=True, cascade="all, delete-orphan")
+    found_reports = db.relationship('FoundReport', backref='item', lazy=True, cascade="all, delete-orphan")
 
     def can_view_phone_number(self, current_user):
         """

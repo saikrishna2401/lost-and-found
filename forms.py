@@ -3,7 +3,7 @@ Forms Module.
 Defines WTForms for authentication, item submission, claims, user management, moderation, and password resets.
 """
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, DateField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from models.user import User
@@ -59,6 +59,13 @@ class ItemForm(FlaskForm):
     phone_number = StringField('Contact Phone Number (Kept Private)', validators=[DataRequired(), Length(min=7, max=30)])
     image = FileField('Upload Photo (Optional)', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'gif'], 'Only images are allowed.')])
     submit = SubmitField('Submit Report')
+
+class FoundReportForm(FlaskForm):
+    image = FileField('Upload Recent Photo of Found Item', validators=[FileRequired(message='Please upload a recent photo of the found item.'), FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'gif'], 'Only images are allowed.')])
+    description = TextAreaField('Where & When Found / Description Details', validators=[DataRequired(message='Please explain where and when you found this item.'), Length(min=10, message='Description must be at least 10 characters.')])
+    phone_number = StringField('Your Contact Phone Number', validators=[DataRequired(message='Please enter your contact phone number.'), Length(min=7, max=30)])
+    email = StringField('Your Contact Email Address', validators=[DataRequired(message='Please enter your email address.'), Email(), Length(max=120)])
+    submit = SubmitField('Submit Found Report')
 
 class ClaimForm(FlaskForm):
     reason = TextAreaField('Request Note (Why do you believe this item belongs to you?)', validators=[DataRequired(), Length(min=10)])

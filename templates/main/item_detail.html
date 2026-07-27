@@ -88,6 +88,43 @@
                     <small class="text-secondary d-block"><i class="bi bi-lock-fill text-warning me-1"></i> The uploader's contact phone number will be revealed here automatically once your claim request is reviewed and approved by moderators.</small>
                 </div>
                 {% endif %}
+                <!-- Approved Found Reports Disclosure Box (For Lost Item Owner) -->
+                {% if approved_found_reports %}
+                {% for rpt in approved_found_reports %}
+                <div class="p-3 border border-success rounded bg-light mb-4 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                        <div>
+                            <span class="badge bg-success text-uppercase mb-1"><i class="bi bi-check-circle-fill me-1"></i> Found Report Approved!</span>
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-person-fill-check text-success me-1"></i> Finder: {{ rpt.finder.username }}</h6>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="tel:{{ rpt.phone_number }}" class="btn btn-sm btn-success rounded-pill fw-bold">
+                                <i class="bi bi-telephone-out-fill me-1"></i> Call Finder
+                            </a>
+                            <a href="mailto:{{ rpt.email }}" class="btn btn-sm btn-outline-success rounded-pill fw-bold">
+                                <i class="bi bi-envelope-fill me-1"></i> Email Finder
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center mb-2 mb-md-0">
+                            <img src="{{ get_item_image_url(rpt.image_filename) }}" class="img-fluid rounded border shadow-sm max-height-120" alt="Found Item Photo">
+                        </div>
+                        <div class="col-md-9">
+                            <p class="small text-secondary mb-1"><strong>Location & Details:</strong> {{ rpt.description }}</p>
+                            <div class="d-flex flex-wrap gap-3 small text-dark font-monospace fw-bold">
+                                <span><i class="bi bi-telephone text-success me-1"></i> Phone: {{ rpt.phone_number }}</span>
+                                <span><i class="bi bi-envelope text-info me-1"></i> Email: {{ rpt.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% elif existing_found_report and existing_found_report.status == 'Pending' %}
+                <div class="p-3 border border-warning rounded bg-light mb-4">
+                    <small class="text-secondary d-block"><i class="bi bi-lock-fill text-warning me-1"></i> Your submitted "I Found This Item" report is currently pending review by moderators. Your contact details will be shared with the Lost Item owner once approved.</small>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Action Controls Bar -->
@@ -95,6 +132,27 @@
                 <small class="text-muted">Reported by <strong>{{ item.submitter.username }}</strong> on {{ item.created_at.strftime('%b %d, %Y') }}</small>
 
                 <div class="d-flex align-items-center gap-2">
+                    <!-- "I Found This Item" Action Button for Lost Items -->
+                    {% if item.item_type == 'lost' and item.status in ['Approved', 'Claimed'] %}
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.id != item.user_id %}
+                                {% if existing_found_report %}
+                                    <span class="badge bg-warning text-dark p-2">
+                                        <i class="bi bi-hourglass-split me-1"></i> Found Report: {{ existing_found_report.status }}
+                                    </span>
+                                {% else %}
+                                    <a href="{{ url_for('main.report_found_item', item_id=item.id) }}" class="btn btn-primary rounded-pill fw-bold px-4">
+                                        <i class="bi bi-check-circle-fill me-1"></i> I Found This Item
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-outline-primary rounded-pill fw-bold">
+                                <i class="bi bi-geo-alt-fill me-1"></i> Log in to Report "I Found This Item"
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
                     <!-- Claim Request Button for Found Items -->
                     {% if item.item_type == 'found' and item.status == 'Approved' %}
                         {% if current_user.is_authenticated %}

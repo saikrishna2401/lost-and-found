@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Report Finding Lost Item - {{ item.title }}{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center py-3">
+    <div class="col-md-8">
+        <div class="card search-card p-4 shadow">
+            <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                <i class="bi bi-box-seam-fill text-success display-5"></i>
+                <div>
+                    <h3 class="fw-bold mb-1">I Found This Item</h3>
+                    <p class="text-muted small mb-0">Reporting found location for Lost Item: <strong>{{ item.title }}</strong> (Lost at {{ item.location }})</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info border-0 mb-4 shadow-sm" role="alert">
+                <i class="bi bi-shield-lock-fill me-2"></i>
+                <strong>Secure Contact Sharing:</strong> Your submitted photo, description, phone number, and email will be reviewed by moderation heads. Once approved, your contact details will be shared exclusively with the Lost Item owner.
+            </div>
+
+            <form method="POST" action="{{ url_for('main.report_found_item', item_id=item.id) }}" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <!-- Upload Recent Photo (Required) -->
+                <div class="mb-3">
+                    {{ form.image.label(class="form-label fw-semibold") }} <span class="text-danger">*</span>
+                    {{ form.image(class="form-control") }}
+                    <small class="text-muted d-block mt-1">Please upload a clear, recent photo of the item you found.</small>
+                    {% for error in form.image.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+
+                    <div id="image-preview" class="img-preview-box mt-3">
+                        <span class="text-muted small"><i class="bi bi-image me-1"></i> Uploaded photo preview will appear here</span>
+                    </div>
+                </div>
+
+                <!-- Description & Location Details (Required) -->
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label fw-semibold") }} <span class="text-danger">*</span>
+                    {{ form.description(class="form-control", rows="4", placeholder="Explain exactly where and when you found this item, its current condition, or where it is safely stored.") }}
+                    {% for error in form.description.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Contact Phone & Email (Required) -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.phone_number.label(class="form-label fw-semibold") }} <span class="text-danger">*</span>
+                        {{ form.phone_number(class="form-control", placeholder="e.g. +1 (555) 019-2834") }}
+                        {% for error in form.phone_number.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        {{ form.email.label(class="form-label fw-semibold") }} <span class="text-danger">*</span>
+                        {{ form.email(class="form-control", placeholder="e.g. finder@example.com") }}
+                        {% for error in form.email.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    {{ form.submit(class="btn btn-success btn-lg rounded-pill fw-bold flex-grow-1") }}
+                    <a href="{{ url_for('main.item_detail', item_id=item.id) }}" class="btn btn-outline-secondary btn-lg rounded-pill">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

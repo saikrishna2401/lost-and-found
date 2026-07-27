@@ -8,6 +8,7 @@ from models import db
 from models.item import Item
 from models.category import Category
 from models.claim import ClaimRequest
+from models.found_report import FoundReport
 from forms import ItemForm
 from services.storage_service import StorageService
 from services.matching_service import MatchingService
@@ -19,14 +20,16 @@ user_bp = Blueprint('user', __name__, url_prefix='/user')
 @user_bp.route('/dashboard')
 @login_required
 def dashboard():
-    """Normal User Dashboard: Displays submitted posts, claim status, and notifications."""
+    """Normal User Dashboard: Displays submitted posts, claim status, found reports, and notifications."""
     user_items = Item.query.filter_by(user_id=current_user.id, is_deleted=False).order_by(Item.created_at.desc()).all()
     user_claims = ClaimRequest.query.filter_by(user_id=current_user.id).order_by(ClaimRequest.created_at.desc()).all()
+    user_found_reports = FoundReport.query.filter_by(user_id=current_user.id).order_by(FoundReport.created_at.desc()).all()
 
     return render_template(
         'user/dashboard.html',
         items=user_items,
-        claims=user_claims
+        claims=user_claims,
+        found_reports=user_found_reports
     )
 
 @user_bp.route('/items/create', methods=['GET', 'POST'])
