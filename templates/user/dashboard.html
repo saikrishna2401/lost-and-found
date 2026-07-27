@@ -127,16 +127,23 @@
                             <span class="badge badge-status {{ claim.status_badge_class }}">
                                 {{ claim.status }}
                             </span>
+                            {% if claim.status == 'Approved' %}
+                            <span class="d-block mt-1 badge bg-success text-white small" title="Contact Unlocked">
+                                <i class="bi bi-telephone-fill me-1"></i> Contact Available
+                            </span>
+                            {% endif %}
                         </td>
                         <td>
-                            {% if claim.status == 'Rejected' and claim.rejection_reason %}
+                            {% if claim.status == 'Approved' and claim.item and claim.item.phone_number %}
+                            <span class="text-success fw-bold small font-monospace"><i class="bi bi-telephone me-1"></i> {{ claim.item.phone_number }}</span>
+                            {% elif claim.status == 'Rejected' and claim.rejection_reason %}
                             <span class="text-danger small">{{ claim.rejection_reason }}</span>
                             {% else %}
-                            <span class="text-muted small">N/A</span>
+                            <span class="text-muted small">Pending Review</span>
                             {% endif %}
                         </td>
                         <td class="text-end">
-                            <a href="{{ url_for('main.item_detail', item_id=claim.item_id) }}" class="btn btn-sm btn-outline-primary rounded-pill">View Item</a>
+                            <a href="{{ url_for('main.item_detail', item_id=claim.item_id) }}" class="btn btn-sm btn-outline-primary rounded-pill">View Item & Contact</a>
                         </td>
                     </tr>
                     {% endfor %}

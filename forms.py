@@ -56,13 +56,14 @@ class ItemForm(FlaskForm):
     description = TextAreaField('Detailed Description', validators=[DataRequired(), Length(min=10)])
     location = StringField('Location (City / Building / Area)', validators=[DataRequired(), Length(max=150)])
     date_event = DateField('Date (When Lost or Found)', validators=[DataRequired()])
+    phone_number = StringField('Contact Phone Number (Kept Private)', validators=[DataRequired(), Length(min=7, max=30)])
     image = FileField('Upload Photo (Optional)', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'webp', 'gif'], 'Only images are allowed.')])
     submit = SubmitField('Submit Report')
 
 class ClaimForm(FlaskForm):
-    reason = TextAreaField('Reason for Claim', validators=[DataRequired(), Length(min=10)])
+    reason = TextAreaField('Request Note (Why do you believe this item belongs to you?)', validators=[DataRequired(), Length(min=10)])
     description_proof = TextAreaField('Proof of Ownership (Unique identifiers, receipt, serial #)', validators=[DataRequired(), Length(min=10)])
-    contact_info = StringField('Contact Details (Phone / Alternate Email)', validators=[DataRequired(), Length(max=150)])
+    contact_info = StringField('Your Contact Details (Phone / Alternate Email)', validators=[DataRequired(), Length(max=150)])
     submit = SubmitField('Submit Claim Request')
 
 class ReviewActionForm(FlaskForm):

@@ -53,6 +53,7 @@ class TestLostAndFoundApp(unittest.TestCase):
                 description='Found a silver Macbook Air on a study bench.',
                 location='Student Center',
                 date_event=date.today(),
+                phone_number='+15559876543',
                 status=Item.STATUS_APPROVED,
                 user_id=self.admin_id
             )
@@ -92,7 +93,8 @@ class TestLostAndFoundApp(unittest.TestCase):
             category_id=self.category_id,
             description='Lost silver laptop at student center',
             location='Student Center',
-            date_event=str(date.today())
+            date_event=str(date.today()),
+            phone_number='+15550192834'
         ), follow_redirects=True)
 
         self.assertIn(b'submitted', res.data.lower())

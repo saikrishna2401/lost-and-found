@@ -52,12 +52,23 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    {{ form.location.label(class="form-label fw-semibold") }}
-                    {{ form.location(class="form-control") }}
-                    {% for error in form.location.errors %}
-                        <div class="text-danger small mt-1">{{ error }}</div>
-                    {% endfor %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.location.label(class="form-label fw-semibold") }}
+                        {{ form.location(class="form-control") }}
+                        {% for error in form.location.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        {{ form.phone_number.label(class="form-label fw-semibold") }}
+                        {{ form.phone_number(class="form-control") }}
+                        <small class="text-muted d-block mt-1"><i class="bi bi-shield-lock text-success me-1"></i> Kept strictly private. Shared only after an approved claim.</small>
+                        {% for error in form.phone_number.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
                 </div>
 
                 <div class="mb-3">

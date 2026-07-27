@@ -116,13 +116,26 @@ def review_claim(claim_id):
             db.session.commit()
 
             AuditService.log('HEAD_APPROVED_CLAIM', target_type='ClaimRequest', target_id=claim.id)
+            
+            # Notify Claimant (unlocks contact info)
+            contact_msg = f" (Phone: {item.phone_number})" if item.phone_number else ""
             NotificationService.send_notification(
                 user_id=claim.user_id,
                 title="Claim Request Approved!",
-                message=f"Your claim for '{item.title}' has been approved! Moderators will contact you for handover.",
-                link=url_for('user.dashboard')
+                message=f"Your claim for '{item.title}' has been approved! The uploader's contact number{contact_msg} is now unlocked.",
+                link=url_for('main.item_detail', item_id=item.id)
             )
-            flash('Claim request APPROVED. Item status updated to CLAIMED.', 'success')
+
+            # Notify Uploader (informs contact sharing)
+            if item.user_id != claim.user_id:
+                NotificationService.send_notification(
+                    user_id=item.user_id,
+                    title="Claim Approved for Your Item",
+                    message=f"Your item '{item.title}' has an approved claim by user '{claim.claimant.username}'. Your contact phone number has been shared with them.",
+                    link=url_for('main.item_detail', item_id=item.id)
+                )
+
+            flash('Claim request APPROVED. Contact phone number unlocked for claimant.', 'success')
 
         elif action == 'reject':
             claim.status = ClaimRequest.STATUS_REJECTED

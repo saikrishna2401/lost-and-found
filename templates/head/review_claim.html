@@ -20,10 +20,11 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <div class="p-3 border rounded bg-light h-100">
-                        <h6 class="fw-bold text-primary mb-2">Item Details</h6>
+                        <h6 class="fw-bold text-primary mb-2">Item & Uploader Details</h6>
                         <p class="mb-1"><strong>Title:</strong> {{ item.title }}</p>
                         <p class="mb-1"><strong>Found At:</strong> {{ item.location }}</p>
-                        <p class="mb-1"><strong>Reported By:</strong> {{ item.submitter.username }}</p>
+                        <p class="mb-1"><strong>Reported By:</strong> {{ item.submitter.username }} ({{ item.submitter.email }})</p>
+                        <p class="mb-1 text-danger"><strong>Uploader Phone:</strong> <span class="badge bg-danger text-white font-monospace fs-6">{{ item.phone_number or 'Not Provided' }}</span></p>
                         <p class="mb-0"><strong>Description:</strong> {{ item.description|truncate(100) }}</p>
                     </div>
                 </div>

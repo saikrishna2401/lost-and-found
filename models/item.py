@@ -34,6 +34,7 @@ class Item(db.Model):
     description = db.Column(db.Text, nullable=False)
     location = db.Column(db.String(150), nullable=False, index=True)
     date_event = db.Column(db.Date, nullable=False) # Date when item was lost or found
+    phone_number = db.Column(db.String(30), nullable=True) # Contact phone number (strictly private)
     image_filename = db.Column(db.String(255), nullable=True)
 
     # 7-stage lifecycle status
@@ -49,6 +50,26 @@ class Item(db.Model):
 
     # Relationships
     claims = db.relationship('ClaimRequest', backref='item', lazy=True, cascade="all, delete-orphan")
+
+    def can_view_phone_number(self, current_user):
+        """
+        Determines whether the given current_user is authorized to view the uploader's phone number.
+        Allowed users:
+        1. Item uploader (current_user.id == self.user_id)
+        2. Head Reviewers and Admins (current_user.role in ['admin', 'head'])
+        3. Claimant whose claim request for this item was APPROVED by moderators.
+        """
+        if not current_user or not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return False
+        if current_user.id == self.user_id or (hasattr(current_user, 'role') and current_user.role in ['admin', 'head']):
+            return True
+        from models.claim import ClaimRequest
+        approved_claim = ClaimRequest.query.filter_by(
+            item_id=self.id,
+            user_id=current_user.id,
+            status=ClaimRequest.STATUS_APPROVED
+        ).first()
+        return approved_claim is not None
 
     @property
     def status_badge_class(self):

@@ -31,6 +31,10 @@ class Config:
 
     # Database configuration: supports SQLite locally and PostgreSQL on Supabase/Render
     db_url = os.environ.get('DATABASE_URL')
+    instance_dir = os.path.join(BASE_DIR, 'instance')
+    os.makedirs(instance_dir, exist_ok=True)
+    sqlite_fallback_uri = f"sqlite:///{os.path.join(instance_dir, 'lost_and_found.db')}"
+
     if db_url:
         # Normalize postgres:// to postgresql://
         if db_url.startswith('postgres://'):
@@ -47,11 +51,23 @@ class Config:
                     encoded_pass = quote(decoded_pass, safe='')
                     db_url = f"postgresql://{username}:{encoded_pass}@{host_db}"
 
-        SQLALCHEMY_DATABASE_URI = db_url
+        # Verify DNS reachability for PostgreSQL host to prevent local startup crash
+        use_remote_db = True
+        if db_url.startswith('postgresql://') and '@' in db_url:
+            try:
+                import socket
+                hostname = db_url.split('@')[-1].split('/')[0].split(':')[0]
+                socket.gethostbyname(hostname)
+            except Exception:
+                use_remote_db = False
+                print(f"Warning: Cloud database host '{hostname}' unreachable. Falling back to local SQLite database.")
+
+        if use_remote_db:
+            SQLALCHEMY_DATABASE_URI = db_url
+        else:
+            SQLALCHEMY_DATABASE_URI = sqlite_fallback_uri
     else:
-        instance_dir = os.path.join(BASE_DIR, 'instance')
-        os.makedirs(instance_dir, exist_ok=True)
-        SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(instance_dir, 'lost_and_found.db')}"
+        SQLALCHEMY_DATABASE_URI = sqlite_fallback_uri
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     

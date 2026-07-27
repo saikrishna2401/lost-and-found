@@ -53,6 +53,7 @@ def create_item():
             description=form.description.data.strip(),
             location=form.location.data.strip(),
             date_event=form.date_event.data,
+            phone_number=form.phone_number.data.strip() if form.phone_number.data else None,
             image_filename=image_filename,
             status=Item.STATUS_PENDING,
             user_id=current_user.id
@@ -108,6 +109,7 @@ def edit_item(item_id):
         item.description = form.description.data.strip()
         item.location = form.location.data.strip()
         item.date_event = form.date_event.data
+        item.phone_number = form.phone_number.data.strip() if form.phone_number.data else None
 
         if form.image.data:
             try:

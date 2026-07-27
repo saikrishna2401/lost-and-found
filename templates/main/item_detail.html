@@ -63,6 +63,31 @@
                 <!-- Description -->
                 <h6 class="fw-bold text-secondary mb-2">Detailed Description</h6>
                 <p class="text-secondary leading-relaxed mb-4">{{ item.description }}</p>
+
+                <!-- Secure Contact Sharing Section -->
+                {% if item.can_view_phone_number(current_user) %}
+                <div class="p-3 border border-success rounded bg-light mb-4 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="badge bg-success text-uppercase mb-1"><i class="bi bi-shield-check me-1"></i> Contact Access Granted</span>
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-telephone-fill text-success me-2"></i> Uploader Phone Number:</h6>
+                        </div>
+                        <a href="tel:{{ item.phone_number }}" class="btn btn-sm btn-success rounded-pill fw-bold px-3">
+                            <i class="bi bi-telephone-out-fill me-1"></i> Call Uploader
+                        </a>
+                    </div>
+                    <p class="fs-5 fw-bold text-dark mb-0 mt-2 font-monospace">{{ item.phone_number or 'Not provided' }}</p>
+                    {% if existing_claim and existing_claim.status == 'Approved' %}
+                        <small class="text-muted d-block mt-1"><i class="bi bi-info-circle me-1"></i> Shared with you following your approved ownership claim.</small>
+                    {% elif current_user.id == item.user_id %}
+                        <small class="text-muted d-block mt-1"><i class="bi bi-person-check me-1"></i> This is your submitted contact phone number.</small>
+                    {% endif %}
+                </div>
+                {% elif existing_claim and existing_claim.status == 'Pending' %}
+                <div class="p-3 border border-warning rounded bg-light mb-4">
+                    <small class="text-secondary d-block"><i class="bi bi-lock-fill text-warning me-1"></i> The uploader's contact phone number will be revealed here automatically once your claim request is reviewed and approved by moderators.</small>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Action Controls Bar -->
