@@ -29,10 +29,26 @@ def create_app(config_class=Config):
     db.init_app(app)
     CSRFProtect(app)
 
-    # Auto-create database tables on startup if they don't exist yet
+    # Auto-create database tables & auto-migrate missing columns on startup
     with app.app_context():
         try:
             db.create_all()
+            # Lightweight schema auto-migration for newly added columns (e.g. phone_number)
+            try:
+                from sqlalchemy import text
+                db_uri = str(app.config.get('SQLALCHEMY_DATABASE_URI', ''))
+                if 'postgresql' in db_uri:
+                    db.session.execute(text("ALTER TABLE items ADD COLUMN IF NOT EXISTS phone_number VARCHAR(30);"))
+                else:
+                    # SQLite auto-migration logic
+                    try:
+                        db.session.execute(text("ALTER TABLE items ADD COLUMN phone_number VARCHAR(30);"))
+                    except Exception:
+                        pass # Column already exists in SQLite
+                db.session.commit()
+            except Exception as migration_err:
+                db.session.rollback()
+                print(f"Schema Auto-Migration Note: {migration_err}")
         except Exception as e:
             print(f"Cloud Database Initialization Warning: {e}")
 
