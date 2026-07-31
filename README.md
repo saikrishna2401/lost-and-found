@@ -99,22 +99,3 @@ Running `python seed.py` automatically generates three default accounts for test
 | **Administrator** | `admin` | `admin@example.com` | `Admin@123` |
 | **Head Reviewer** | `head` | `head@example.com` | `Head@123` |
 | **Normal User** | `john_doe` | `user@example.com` | `User@123` |
-
----
-
-## Render Cloud Deployment Guide
-
-1. Push your project code to a GitHub or GitLab repository.
-2. Log in to [Render](https://render.com/).
-3. Click **New +** ➔ **Web Service**.
-4. Connect your Git repository (`saikrishna2401/lost-and-found`).
-5. Configure the web service settings:
-   - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn app:app`
-6. Add Environment Variables under **Environment**:
-   - `SECRET_KEY`: (Click 'Generate' or enter a secure random string)
-   - `DATABASE_URL`: `postgresql://postgres.cvdmqgaauhnysytojwyh:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres`
-   - `SUPABASE_URL`: `https://cvdmqgaauhnysytojwyh.supabase.co`
-   - `SUPABASE_KEY`: `sb_publishable_UAzzySBLlCA5LapdGh04fA_AYvvs6fc`
-7. Click **Create Web Service**. Render will build and deploy your application automatically!
